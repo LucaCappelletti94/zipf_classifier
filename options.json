@@ -1,0 +1,12 @@
+[{},
+    {
+        "remove_stop_words": true
+    },
+    {
+        "minimum_count": 1
+    },
+    {
+        "remove_stop_words": true,
+        "minimum_count": 1
+    }
+]

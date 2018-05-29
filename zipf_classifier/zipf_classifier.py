@@ -62,7 +62,22 @@ class ZipfBinaryClassifier:
 
     def _get_paths(self, root):
         """Return list of all path under given root with .txt extension."""
-        return [y for x in walk(root) for y in glob(join(x[0], '*.txt'))]
+        pattern = '*.txt'
+        return [y for x in tqdm(
+            walk(root),
+            desc="Searching %s files" % pattern,
+            unit=' dir',
+            leave=True,
+            unit_scale=True
+        ) for y in tqdm(
+            glob(join(x[0], pattern)),
+            desc="Loading files from %s" % x[0].split("/")[0],
+            unit=' file',
+            leave=True,
+            unit_scale=True
+        )]
+
+        print('\n')
 
     def _update_bar(self, bar, n):
         """Increase len of total bar and given bar."""
@@ -87,15 +102,15 @@ class ZipfBinaryClassifier:
         """Execute for expected value a test on file at given path."""
         zipf = self._factory.run(path)
         denominator = (zipf + self._baseline) / 2
-        normalized = (zipf / denominator).render()
-        success_distance = sum([metric(normalized, s / denominator)
+        normalized = zipf / denominator
+        success_distance = sum([metric(normalized, s)
                                 for s in successes]) / len(successes)
-        failure_distance = sum([metric(normalized, f / denominator)
+        failure_distance = sum([metric(normalized, f)
                                 for f in failures]) / len(failures)
 
         if isclose(success_distance, failure_distance, rel_tol=resolution):
             self._add_incertain()
-        elif (success_distance < failure_distance) == expected:
+        elif success_distance < failure_distance:
             self._add_success()
         else:
             self._add_failure()
@@ -134,7 +149,27 @@ class ZipfBinaryClassifier:
 
     def render_baseline(self):
         """Render baseline zipf."""
+        print("Calculating baseline.")
         self._baseline = self._get_baseline()
+        print("\nNormalizing given zipfs")
+        for expected, zipfs in tqdm(
+            self._zipfs.items(),
+            desc="Normalizing zipfs",
+            unit=' class',
+            leave=True,
+            unit_scale=True
+        ):
+            for i, zipf in tqdm(
+                enumerate(zipfs),
+                total=len(zipfs),
+                desc="Normalizing zipfs of class %s" % expected,
+                unit=' zipf',
+                leave=True,
+                unit_scale=True
+            ):
+                zipfs[i] = (zipf / self._baseline).render()
+
+        # print('\n')
 
     def run(self, root, expected, metric, resolution=1e-5):
         """Execute tests on all files under given root, using given metric."""

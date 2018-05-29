@@ -37,7 +37,7 @@ class ZipfBinaryClassifier:
         self._lock = Lock()
 
     def __repr__(self):
-        """"Return representation of ZipfFromFile."""
+        """Return representation of ZipfFromFile."""
         return dumps(self._options, indent=4, sort_keys=True)
 
     __str__ = __repr__
@@ -88,9 +88,9 @@ class ZipfBinaryClassifier:
         zipf = self._factory.run(path)
         denominator = (zipf + self._baseline) / 2
         normalized = (zipf / denominator).render()
-        success_distance = sum([metric(normalized, (s / denominator).render())
+        success_distance = sum([metric(normalized, s / denominator)
                                 for s in successes]) / len(successes)
-        failure_distance = sum([metric(normalized, (f / denominator).render())
+        failure_distance = sum([metric(normalized, f / denominator)
                                 for f in failures]) / len(failures)
 
         if isclose(success_distance, failure_distance, rel_tol=resolution):

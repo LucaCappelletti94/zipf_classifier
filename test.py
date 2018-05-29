@@ -17,7 +17,7 @@ test_root = "/Users/lucacappelletti/Datasets/parsed_zipfs/zipfs"
 dataset_root = "/Users/lucacappelletti/Datasets/zipf_datasets/for_datasets"
 test_zipfs = [x[0] for x in walk(test_root) if x[0] != test_root]
 
-for current_test in test_zipfs:
+for current_test in test_zipfs[:1]:
     classifier = ZipfBinaryClassifier(get_options(current_test))
     print("Current classifier has options: %s\n" % classifier)
 

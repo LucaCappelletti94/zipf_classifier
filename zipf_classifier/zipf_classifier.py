@@ -1,4 +1,5 @@
 """Classify dataset with given zipf distributions."""
+import operator
 from glob import glob
 from json import dumps
 from math import ceil
@@ -22,11 +23,11 @@ class MyManager(BaseManager):
 MyManager.register('tqdm', tqdm)
 
 
-class ZipfBinaryClassifier:
+class ZipfClassifier:
     """Classify dataset with given zipf distributions."""
 
     def __init__(self, options=None):
-        """Return ZipfBinaryClassifier with given options."""
+        """Return ZipfClassifier with given options."""
         if options is None:
             options = {}
         options["sort"] = False
@@ -88,18 +89,14 @@ class ZipfBinaryClassifier:
         counter.value += n
         self._lock.release()
 
-    def _add_failure(self, path, success_distance, failure_distance,
-                     classification_distance, normalized_distance):
+    def _add_failure(self, path, distances):
         """Increase len of failure bar."""
         self._update_bar(self._failure_bar, self._errors, 1)
         with open(path, 'r') as f:
             text = f.read()
         self._failures.append({
             "text": text,
-            "success_distance": success_distance,
-            "failure_distance": failure_distance,
-            "classification_distance": classification_distance,
-            "normalized_distance": normalized_distance
+            "distances": distances
         })
 
     def _add_success(self):
@@ -110,37 +107,26 @@ class ZipfBinaryClassifier:
         """Increase len of incertain bar."""
         self._update_bar(self._incertain_bar, self._incertains, 1)
 
-    def _add_classification_distance(self, value):
-        self._classification_distance.value += value
-
-    def _add_norm_cls_dist(self, value):
-        self._norm_cls_dist.value += value
-
     def _get_distances(self, path, metric):
         zipf = self._factory.run(path)
         denominator = (zipf + self._baseline) / 2
         norm = (zipf / denominator).render()
 
-        return {_class: sum([metric(norm, z) for z in zipfs]) / len(zipfs)
-                for _class, zipfs in self._zipfs.items()}
+        distances = {_class: sum([metric(norm, z) for z in zipfs]) / len(zipfs)
+                     for _class, zipfs in self._zipfs.items()}
+
+        return dict(sorted(distances.items(), key=operator.itemgetter(1))[:2])
 
     def _test(self, path, successes, failures, expected, metric, resolution):
         """Execute for expected value a test on file at given path."""
         distances = self._get_distances(path, metric)
 
-        classification_distance = abs(sub(*distances.values()))
-        normalized_distance = classification_distance / sum(distances.values())
-
-        self._add_classification_distance(classification_distance)
-        self._add_norm_cls_dist(normalized_distance)
-
-        if classification_distance < resolution:
+        if abs(sub(*distances.values())) < resolution:
             self._add_incertain()
-        elif success_distance < failure_distance:
+        elif min(distances, key=distances.get) == expected:
             self._add_success()
         else:
-            self._add_failure(path, success_distance, failure_distance,
-                              classification_distance, normalized_distance)
+            self._add_failure(path, distances)
 
     def _tests(self, paths, expected, metric, resolution):
         """Execute batch of tests on given paths for expected value."""
@@ -209,7 +195,7 @@ class ZipfBinaryClassifier:
         self._init_bars(total_paths)
         self._init_counters()
 
-        self._classification_distance = Value('d', 0)
+        self._cls_dist = Value('d', 0)
         self._norm_cls_dist = Value('d', 0)
         self._failures = Manager().list()
 
@@ -226,8 +212,6 @@ class ZipfBinaryClassifier:
             "errors": self._errors.value,
             "successes": self._successes.value,
             "incertain": self._incertains.value,
-            "classification_distance": self._classification_distance.value,
-            "normalized_classification_distance": self._norm_cls_dist.value,
             "failures": list(self._failures)
         }
 

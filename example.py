@@ -2,13 +2,13 @@
 from dictances import normal_total_variation
 from zipf.factories import ZipfFromDir
 
-from zipf_classifier import ZipfBinaryClassifier
+from zipf_classifier import ZipfClassifier
 
 # This options are those which the classifier will use to render the zipfs
 # from the texts at given paths.
 options = {}
 
-classifier = ZipfBinaryClassifier(options)
+classifier = ZipfClassifier(options)
 
 # The dataset on which the zipfs are build SHOULD NOT contain the data on which
 # you will run the classifier, otherwise it's obvious it'll get all data right.
@@ -36,8 +36,8 @@ zipf_B_2_path = "path/to/my/zipf/B/2.json"
 test_dataset_A_path = "path/to/my/test/dataset/A"
 test_dataset_B_path = "path/to/my/test/dataset/B"
 
-class_A = True
-class_B = False
+class_A = 'A'
+class_B = 'B'
 
 # Adding the zipfs of class A
 classifier.add_zipf(zipf_A_1_path, class_A)

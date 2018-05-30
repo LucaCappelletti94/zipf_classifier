@@ -4,7 +4,7 @@ Zipf Binary classifier
 
 What is this?
 ==============
-This is a binary classifier (meaning it can separate documents in two classes) based on the `Zipf Distribution <https://en.wikipedia.org/wiki/Zipf%27s_law>`_ using another python package of mine `zipf <https://github.com/LucaCappelletti94/zipf>`_, converting a text into its frequency representation and then measuring its average distance from a set of zipf of class A and B, using the metrics implemented in yet another package authored by myself, `dictances <https://github.com/LucaCappelletti94/dictances>`_.
+This is a classifier based on the `Zipf Distribution <https://en.wikipedia.org/wiki/Zipf%27s_law>`_ using another python package of mine `zipf <https://github.com/LucaCappelletti94/zipf>`_, converting a text into its frequency representation and then measuring its average distance from a set of zipf of class A and B, using the metrics implemented in yet another package authored by myself, `dictances <https://github.com/LucaCappelletti94/dictances>`_.
 
 How does it work?
 =================
@@ -23,13 +23,13 @@ Basic example
     from dictances import normal_total_variation
     from zipf.factories import ZipfFromDir
 
-    from zipf_classifier import ZipfBinaryClassifier
+    from zipf_classifier import ZipfClassifier
 
     # This options are those which the classifier will use to render the zipfs
     # from the texts at given paths.
     options = {}
 
-    classifier = ZipfBinaryClassifier(options)
+    classifier = ZipfClassifier(options)
 
     # The dataset on which the zipfs are build SHOULD NOT contain the data on which
     # you will run the classifier, otherwise it's obvious it'll get all data right.
@@ -57,8 +57,8 @@ Basic example
     test_dataset_A_path = "path/to/my/test/dataset/A"
     test_dataset_B_path = "path/to/my/test/dataset/B"
 
-    class_A = True
-    class_B = False
+    class_A = 'A'
+    class_B = 'B'
 
     # Adding the zipfs of class A
     classifier.add_zipf(zipf_A_1_path, class_A)

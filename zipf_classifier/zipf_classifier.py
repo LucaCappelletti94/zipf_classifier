@@ -2,7 +2,7 @@
 from glob import glob
 from json import dumps
 from math import ceil, isclose
-from multiprocessing import Lock, Process, cpu_count
+from multiprocessing import Lock, Process, Value, cpu_count
 from multiprocessing.managers import BaseManager
 from os import walk
 from os.path import join
@@ -79,30 +79,40 @@ class ZipfBinaryClassifier:
 
         print('\n')
 
-    def _update_bar(self, bar, n):
+    def _update_bar(self, bar, counter, n):
         """Increase len of total bar and given bar."""
         self._lock.acquire()
         bar.update(n)
         self._total_bar.update(n)
+        counter.value += n
         self._lock.release()
 
     def _add_failure(self, n=1):
         """Increase len of failure bar."""
-        self._update_bar(self._failure_bar, n)
+        self._update_bar(self._failure_bar, self._errors, n)
 
     def _add_success(self, n=1):
         """Increase len of success bar."""
-        self._update_bar(self._success_bar, n)
+        self._update_bar(self._success_bar, self._successes, n)
 
     def _add_incertain(self, n=1):
         """Increase len of incertain bar."""
-        self._update_bar(self._incertain_bar, n)
+        self._update_bar(self._incertain_bar, self._incertains, n)
 
-    def _test(self, path, successes, failures, expected, metric, resolution):
+    def _test(self, path, successes, failures, expected, _metric, resolution):
         """Execute for expected value a test on file at given path."""
         zipf = self._factory.run(path)
         denominator = (zipf + self._baseline) / 2
-        normalized = zipf / denominator
+        normalized = (zipf / denominator).render()
+
+        def metric(a, b):
+            try:
+                return _metric(a, b)
+            except ValueError as e:
+                if _metric.__name__ == 'bhattacharyya':
+                    return 100000
+                raise
+
         success_distance = sum([metric(normalized, s)
                                 for s in successes]) / len(successes)
         failure_distance = sum([metric(normalized, f)
@@ -140,6 +150,12 @@ class ZipfBinaryClassifier:
         self._failure_bar = self._get_bar(total, 'Failures', 2)
         self._incertain_bar = self._get_bar(total, 'Incertain', 3)
 
+    def _init_counters(self):
+        """Init all counters."""
+        self._errors = Value('i', 0)
+        self._successes = Value('i', 0)
+        self._incertains = Value('i', 0)
+
     def _close_bars(self):
         """Close all loading bars."""
         self._total_bar.close()
@@ -171,11 +187,12 @@ class ZipfBinaryClassifier:
 
         # print('\n')
 
-    def run(self, root, expected, metric, resolution=1e-5):
+    def run(self, root, expected, metric, resolution=1e-3):
         """Execute tests on all files under given root, using given metric."""
         paths = self._get_paths(root)
         total_paths = len(paths)
         self._init_bars(total_paths)
+        self._init_counters()
 
         chunks = self._chunks(paths, ceil(total_paths / cpu_count()))
         processes = [Process(target=self._tests, args=(
@@ -185,3 +202,9 @@ class ZipfBinaryClassifier:
 
         self._close_bars()
         print("\n" * 4)
+        return {
+            "total": total_paths,
+            "errors": self._errors.value,
+            "successes": self._successes.value,
+            "incertain": self._incertains.value
+        }

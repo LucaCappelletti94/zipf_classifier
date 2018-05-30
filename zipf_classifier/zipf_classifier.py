@@ -2,7 +2,7 @@
 from glob import glob
 from json import dumps
 from math import ceil, isclose
-from multiprocessing import Lock, Process, Value, cpu_count
+from multiprocessing import Lock, Manager, Process, Value, cpu_count
 from multiprocessing.managers import BaseManager
 from os import walk
 from os.path import join
@@ -87,17 +87,33 @@ class ZipfBinaryClassifier:
         counter.value += n
         self._lock.release()
 
-    def _add_failure(self, n=1):
+    def _add_failure(self, path, success_distance, failure_distance,
+                     classification_distance, normalized_distance):
         """Increase len of failure bar."""
-        self._update_bar(self._failure_bar, self._errors, n)
+        self._update_bar(self._failure_bar, self._errors, 1)
+        with open(path, 'r') as f:
+            text = f.read()
+        self._failures.append({
+            "text": text,
+            "success_distance": success_distance,
+            "failure_distance": failure_distance,
+            "classification_distance": classification_distance,
+            "normalized_distance": normalized_distance
+        })
 
-    def _add_success(self, n=1):
+    def _add_success(self):
         """Increase len of success bar."""
-        self._update_bar(self._success_bar, self._successes, n)
+        self._update_bar(self._success_bar, self._successes, 1)
 
-    def _add_incertain(self, n=1):
+    def _add_incertain(self):
         """Increase len of incertain bar."""
-        self._update_bar(self._incertain_bar, self._incertains, n)
+        self._update_bar(self._incertain_bar, self._incertains, 1)
+
+    def _add_classification_distance(self, value):
+        self._classification_distance.value += value
+
+    def _add_normalized_classification_distance(self, value):
+        self._normalized_classification_distance.value += value
 
     def _test(self, path, successes, failures, expected, _metric, resolution):
         """Execute for expected value a test on file at given path."""
@@ -118,12 +134,20 @@ class ZipfBinaryClassifier:
         failure_distance = sum([metric(normalized, f)
                                 for f in failures]) / len(failures)
 
+        classification_distance = abs(success_distance - failure_distance)
+        normalized_distance = classification_distance / \
+            (success_distance + failure_distance)
+
+        self._add_classification_distance(classification_distance)
+        self._add_normalized_classification_distance(normalized_distance)
+
         if isclose(success_distance, failure_distance, rel_tol=resolution):
             self._add_incertain()
         elif success_distance < failure_distance:
             self._add_success()
         else:
-            self._add_failure()
+            self._add_failure(path, success_distance, failure_distance,
+                              classification_distance, normalized_distance)
 
     def _tests(self, paths, expected, metric, resolution):
         """Execute batch of tests on given paths for expected value."""
@@ -194,6 +218,10 @@ class ZipfBinaryClassifier:
         self._init_bars(total_paths)
         self._init_counters()
 
+        self._classification_distance = Value('d', 0)
+        self._normalized_classification_distance = Value('d', 0)
+        self._failures = Manager().list()
+
         chunks = self._chunks(paths, ceil(total_paths / cpu_count()))
         processes = [Process(target=self._tests, args=(
             chk, expected, metric, resolution)) for chk in chunks]
@@ -206,5 +234,8 @@ class ZipfBinaryClassifier:
             "total": total_paths,
             "errors": self._errors.value,
             "successes": self._successes.value,
-            "incertain": self._incertains.value
+            "incertain": self._incertains.value,
+            "classification_distance": self._classification_distance.value,
+            "normalized_classification_distance": self._normalized_classification_distance.value,
+            "failures": self._failures
         }

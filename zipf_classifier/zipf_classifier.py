@@ -126,7 +126,7 @@ class ZipfBinaryClassifier:
 
     def _test(self, path, successes, failures, expected, metric, resolution):
         """Execute for expected value a test on file at given path."""
-        self._get_distances(path, metric)
+        distances = self._get_distances(path, metric)
 
         classification_distance = abs(sub(*distances.values()))
         normalized_distance = classification_distance / sum(distances.values())

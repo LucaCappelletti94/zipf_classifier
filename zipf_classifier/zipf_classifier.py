@@ -124,7 +124,7 @@ class ZipfBinaryClassifier:
         return {_class: sum([metric(norm, z) for z in zipfs]) / len(zipfs)
                 for _class, zipfs in self._zipfs.items()}
 
-    def _test(self, path, successes, failures, expected, _metric, resolution):
+    def _test(self, path, successes, failures, expected, metric, resolution):
         """Execute for expected value a test on file at given path."""
         self._get_distances(path, metric)
 

@@ -2,11 +2,11 @@
 from json import dump, load
 from os import walk
 
-from dictances import (bhattacharyya, hellinger, jensen_shannon,
-                       kullback_leibler, normal_total_variation)
+from dictances import (hellinger, jensen_shannon, kullback_leibler,
+                       normal_total_variation)
 from tqdm import tqdm
 
-from zipf_classifier import ZipfBinaryClassifier
+from zipf_classifier import ZipfClassifier
 
 
 def get_options(root):
@@ -19,31 +19,31 @@ test_root = "/Users/lucacappelletti/Datasets/zipf_datasets/zipfs"
 dataset_root = "/Users/lucacappelletti/Datasets/zipf_datasets/for_datasets"
 test_zipfs = [x[0] for x in walk(test_root) if x[0] != test_root]
 
-metrics = [bhattacharyya, hellinger, jensen_shannon,
+metrics = [hellinger, jensen_shannon,
            kullback_leibler, normal_total_variation]
 
 tests_results = []
 
 for i, current_test in enumerate(test_zipfs):
     print("\033[1mRunning test %s of %s\033[0;0m" % (i + 1, len(test_zipfs)))
-    classifier = ZipfBinaryClassifier(get_options(current_test))
+    classifier = ZipfClassifier(get_options(current_test))
     print("Current classifier has options: %s\n" % classifier)
 
     zipfs = {
-        True: [
+        'recipe': [
             "ricette_zafferano"
         ],
-        False: [
+        'non_recipe': [
             "wikipedia",
             "personal_trainer"
         ]
     }
 
     datasets = {
-        True: [
+        'recipe': [
             "recipes"
         ],
-        False: [
+        'non_recipe': [
             "non_recipes"
         ]
     }

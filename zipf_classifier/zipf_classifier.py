@@ -1,9 +1,10 @@
 """Classify dataset with given zipf distributions."""
 from glob import glob
 from json import dumps
-from math import ceil, isclose
+from math import ceil
 from multiprocessing import Lock, Manager, Process, Value, cpu_count
 from multiprocessing.managers import BaseManager
+from operator import sub
 from os import walk
 from os.path import join
 
@@ -112,36 +113,28 @@ class ZipfBinaryClassifier:
     def _add_classification_distance(self, value):
         self._classification_distance.value += value
 
-    def _add_normalized_classification_distance(self, value):
-        self._normalized_classification_distance.value += value
+    def _add_norm_cls_dist(self, value):
+        self._norm_cls_dist.value += value
+
+    def _get_distances(self, path, metric):
+        zipf = self._factory.run(path)
+        denominator = (zipf + self._baseline) / 2
+        norm = (zipf / denominator).render()
+
+        return {_class: sum([metric(norm, z) for z in zipfs]) / len(zipfs)
+                for _class, zipfs in self._zipfs.items()}
 
     def _test(self, path, successes, failures, expected, _metric, resolution):
         """Execute for expected value a test on file at given path."""
-        zipf = self._factory.run(path)
-        denominator = (zipf + self._baseline) / 2
-        normalized = (zipf / denominator).render()
+        self._get_distances(path, metric)
 
-        def metric(a, b):
-            try:
-                return _metric(a, b)
-            except ValueError as e:
-                if _metric.__name__ == 'bhattacharyya':
-                    return 100000
-                raise
-
-        success_distance = sum([metric(normalized, s)
-                                for s in successes]) / len(successes)
-        failure_distance = sum([metric(normalized, f)
-                                for f in failures]) / len(failures)
-
-        classification_distance = abs(success_distance - failure_distance)
-        normalized_distance = classification_distance / \
-            (success_distance + failure_distance)
+        classification_distance = abs(sub(*distances.values()))
+        normalized_distance = classification_distance / sum(distances.values())
 
         self._add_classification_distance(classification_distance)
-        self._add_normalized_classification_distance(normalized_distance)
+        self._add_norm_cls_dist(normalized_distance)
 
-        if isclose(success_distance, failure_distance, rel_tol=resolution):
+        if classification_distance < resolution:
             self._add_incertain()
         elif success_distance < failure_distance:
             self._add_success()
@@ -209,9 +202,7 @@ class ZipfBinaryClassifier:
             ):
                 zipfs[i] = (zipf / self._baseline).render()
 
-        # print('\n')
-
-    def run(self, root, expected, metric, resolution=1e-3):
+    def run(self, root, expected, metric, resolution=1e-4):
         """Execute tests on all files under given root, using given metric."""
         paths = self._get_paths(root)
         total_paths = len(paths)
@@ -219,7 +210,7 @@ class ZipfBinaryClassifier:
         self._init_counters()
 
         self._classification_distance = Value('d', 0)
-        self._normalized_classification_distance = Value('d', 0)
+        self._norm_cls_dist = Value('d', 0)
         self._failures = Manager().list()
 
         chunks = self._chunks(paths, ceil(total_paths / cpu_count()))
@@ -236,6 +227,14 @@ class ZipfBinaryClassifier:
             "successes": self._successes.value,
             "incertain": self._incertains.value,
             "classification_distance": self._classification_distance.value,
-            "normalized_classification_distance": self._normalized_classification_distance.value,
-            "failures": self._failures
+            "normalized_classification_distance": self._norm_cls_dist.value,
+            "failures": list(self._failures)
         }
+
+    def classify(self, path, metric, resolution=1e-4):
+        """Return the classification of text at given path."""
+        distance = self._get_distances(path, metric)
+
+        if abs(sub(*distances.values())) < resolution:
+            return None
+        return min(distances, key=distances.get)

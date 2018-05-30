@@ -1,5 +1,5 @@
 """Usage example of zipf_classifier."""
-from json import load
+from json import dump, load
 from os import walk
 
 from dictances import (bhattacharyya, hellinger, jensen_shannon,
@@ -21,6 +21,8 @@ test_zipfs = [x[0] for x in walk(test_root) if x[0] != test_root]
 
 metrics = [bhattacharyya, hellinger, jensen_shannon,
            kullback_leibler, normal_total_variation]
+
+tests_results = []
 
 for i, current_test in enumerate(test_zipfs):
     print("\033[1mRunning test %s of %s\033[0;0m" % (i + 1, len(test_zipfs)))
@@ -68,10 +70,24 @@ for i, current_test in enumerate(test_zipfs):
 
     print("\n")
 
+    test_results = {}
+
     for expected, paths in datasets.items():
+        expected_result = {}
         for path in paths:
+            path_results = {}
             print("\033[1mWorking on %s \033[0;0m\n" % path)
             for metric in metrics:
                 print("\033[1mUsing metric %s \033[0;0m\n" % metric.__name__)
-                classifier.run("%s/%s" % (dataset_root, path),
-                               expected, normal_total_variation)
+                path_results[metric.__name__] = classifier.run("%s/%s" % (dataset_root, path),
+                                                               expected, metric)
+            expected_result[path] = path_results
+        test_results[expected] = expected_result
+    tests_results.append({
+        "number": i,
+        "options": str(classifier),
+        "results": test_results
+    })
+
+with open('test_results.json', 'w') as f:
+    dump(tests_results, f, sort_keys=True, indent=4)

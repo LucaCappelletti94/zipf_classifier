@@ -52,7 +52,7 @@ class ZipfClassifier:
 
     def chunks(self, l):
         """Yield successive n-sized chunks from l."""
-        n = math.ceil(cpu_count())
+        n = math.ceil(len(l)/cpu_count())
         for i in range(0, len(l), n):
             yield l[i:i + n]
 
@@ -60,9 +60,11 @@ class ZipfClassifier:
         success = 0
         failures = 0
         unclassified = 0
+        total_delta = 0
         mistakes = defaultdict(int)
         for path, expectation in test_couples:
-            prediction = self.classify(path, metric)
+            prediction, delta = self.classify(path, metric)
+            total_delta += delta
             if prediction == expectation:
                 success += 1
             elif prediction is None:
@@ -82,6 +84,7 @@ class ZipfClassifier:
         results["success"] += success
         results["failures"] += failures
         results["unclassified"] += unclassified
+        results["mean_delta"] += total_delta/len(test_couples)
         for key, value in mistakes.items():
             results[key] += value
         lock.release()
@@ -100,6 +103,7 @@ class ZipfClassifier:
          for c in chunked]
         [p.start() for p in ps]
         [p.join() for p in ps]
+        r['mean_delta']/=len(ps)
         return dict(r)
 
     def _get_zipf(self, path):
@@ -120,14 +124,15 @@ class ZipfClassifier:
             d = sum([metric(zipf, z) for z in Z]) / len(Z)
             if d < prediction_value:
                 prediction = C
+                best_second_value = prediction_value
                 prediction_value = d
             elif d < best_second_value:
                 best_second_value = d
         return prediction, abs(prediction_value - best_second_value)
 
-    def classify(self, path, metric, res=1e-4):
+    def classify(self, path, metric, res=1e-5):
         """Return the classification of text at given path."""
         prediction, delta = self._predict(path, metric)
         if delta < res:
-            return None
-        return prediction
+            return None, delta
+        return prediction, delta

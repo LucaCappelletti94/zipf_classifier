@@ -1,26 +1,26 @@
 """Classify dataset with given zipf distributions."""
+import math
 import operator
+import sys
+from collections import defaultdict
 from glob import glob
 from json import dumps
-from math import ceil
-from multiprocessing import Lock, Manager, Process, Value, cpu_count
-from multiprocessing.managers import BaseManager
+from multiprocessing import Lock, Process, Value, cpu_count
+from multiprocessing.managers import BaseManager, DictProxy
 from operator import sub
 from os import walk
-from os.path import join
+from os.path import isdir, join
 
 from tqdm import tqdm
 from zipf import Zipf
-from zipf.factories import ZipfFromFile
+from zipf.factories import ZipfFromDir, ZipfFromFile
 
 
 class MyManager(BaseManager):
-    """Return an overridable custom multiprocessing Manager."""
-
     pass
 
 
-MyManager.register('tqdm', tqdm)
+MyManager.register('defaultdict', defaultdict, DictProxy)
 
 
 class ZipfClassifier:
@@ -33,10 +33,8 @@ class ZipfClassifier:
         options["sort"] = False
         self._options = options
         self._zipfs = {}
-        self._factory = ZipfFromFile(options=options)
-        self._my_manager = MyManager()
-        self._my_manager.start()
-        self._lock = Lock()
+        self._file_factory = ZipfFromFile(options=options)
+        self._dir_factory = ZipfFromDir(options=options)
 
     def __repr__(self):
         """Return representation of ZipfFromFile."""
@@ -52,173 +50,84 @@ class ZipfClassifier:
         else:
             self._zipfs[expected] = [zipf]
 
-    def _get_baseline(self):
-        """Return a zipf obtained by normalizing and summing every zipf."""
-        zipfs = [item for sublist in self._zipfs.values() for item in sublist]
-        return (sum(zipfs) / len(zipfs)).render()
-
-    def _chunks(self, l, n):
+    def chunks(self, l):
         """Yield successive n-sized chunks from l."""
+        n = math.ceil(cpu_count())
         for i in range(0, len(l), n):
             yield l[i:i + n]
 
-    def _get_paths(self, root):
-        """Return list of all path under given root with .txt extension."""
-        pattern = '*.txt'
-        return [y for x in tqdm(
-            walk(root),
-            desc="Searching %s files" % pattern,
-            unit=' dir',
-            leave=True,
-            unit_scale=True
-        ) for y in tqdm(
-            glob(join(x[0], pattern)),
-            desc="Loading files from %s" % x[0].split("/")[0],
-            unit=' file',
-            leave=True,
-            unit_scale=True
-        )]
+    def _test(self, test_couples, metric, results, lock):
+        success = 0
+        failures = 0
+        unclassified = 0
+        mistakes = defaultdict(int)
+        for path, expectation in test_couples:
+            prediction = self.classify(path, metric)
+            if prediction == expectation:
+                success += 1
+            elif prediction is None:
+                unclassified += 1
+            else:
+                failures += 1
+                key = "Mistook %s for %s" % (expectation.capitalize(), prediction.capitalize())
+                mistakes[key] += 1
 
-        print('\n')
+            lock.acquire()
+            self._i.value += 1
+            lock.release()
+            sys.stderr.write('\rDone testing {0:%}'.format(
+                self._i.value / self._total))
 
-    def _update_bar(self, bar, counter, n):
-        """Increase len of total bar and given bar."""
-        self._lock.acquire()
-        bar.update(n)
-        self._total_bar.update(n)
-        counter.value += n
-        self._lock.release()
+        lock.acquire()
+        results["success"] += success
+        results["failures"] += failures
+        results["unclassified"] += unclassified
+        for key, value in mistakes.items():
+            results[key] += value
+        lock.release()
 
-    def _add_failure(self, path, distances):
-        """Increase len of failure bar."""
-        self._update_bar(self._failure_bar, self._errors, 1)
-        with open(path, 'r') as f:
-            text = f.read()
-        self._failures.append({
-            "text": text,
-            "distances": distances
-        })
+    def test(self, test_couples, metric):
+        """Run prediction test on all given test_couples."""
+        chunked = self.chunks(test_couples)
+        ps = []
+        mgr = MyManager()
+        mgr.start()
+        r = mgr.defaultdict(int)
+        lock = Lock()
+        self._total = len(test_couples)
+        self._i = Value('i', 0)
+        [ps.append(Process(target=self._test, args=(c, metric, r, lock)))
+         for c in chunked]
+        [p.start() for p in ps]
+        [p.join() for p in ps]
+        return dict(r)
 
-    def _add_success(self):
-        """Increase len of success bar."""
-        self._update_bar(self._success_bar, self._successes, 1)
+    def _get_zipf(self, path):
+        """Return the zipf from a given path."""
+        if isdir(path):
+            return self._dir_factory.run(path)
+        if path.endswith('.json'):
+            return Zipf.load(path)
+        return self._file_factory.run(path)
 
-    def _add_incertain(self):
-        """Increase len of incertain bar."""
-        self._update_bar(self._incertain_bar, self._incertains, 1)
+    def _predict(self, path, metric):
+        zipf = self._get_zipf(path)
+        prediction = ""
+        prediction_value = math.inf
+        best_second_value = math.inf
+        
+        for C, Z in self._zipfs.items():
+            d = sum([metric(zipf, z) for z in Z]) / len(Z)
+            if d < prediction_value:
+                prediction = C
+                prediction_value = d
+            elif d < best_second_value:
+                best_second_value = d
+        return prediction, abs(prediction_value - best_second_value)
 
-    def _get_distances(self, path, metric):
-        zipf = self._factory.run(path)
-        denominator = (zipf + self._baseline) / 2
-        norm = (zipf / denominator).render()
-
-        distances = {_class: sum([metric(norm, z) for z in zipfs]) / len(zipfs)
-                     for _class, zipfs in self._zipfs.items()}
-
-        return dict(sorted(distances.items(), key=operator.itemgetter(1))[:2])
-
-    def _test(self, path, successes, failures, expected, metric, resolution):
-        """Execute for expected value a test on file at given path."""
-        distances = self._get_distances(path, metric)
-
-        if abs(sub(*distances.values())) < resolution:
-            self._add_incertain()
-        elif min(distances, key=distances.get) == expected:
-            self._add_success()
-        else:
-            self._add_failure(path, distances)
-
-    def _tests(self, paths, expected, metric, resolution):
-        """Execute batch of tests on given paths for expected value."""
-        successes = self._zipfs[expected]
-        failures = self._zipfs[not expected]
-        [self._test(path, successes, failures, expected, metric, resolution)
-         for path in paths]
-
-    def _get_bar(self, total, label, position):
-        """Return a custom loading bar."""
-        return self._my_manager.tqdm(
-            total=total,
-            desc=label,
-            unit=' zipf',
-            leave=True,
-            position=position,
-            unit_scale=True
-        )
-
-    def _init_bars(self, total):
-        """Init all loading bars."""
-        self._total_bar = self._get_bar(total, 'Tested files', 0)
-        self._success_bar = self._get_bar(total, 'Successes', 1)
-        self._failure_bar = self._get_bar(total, 'Failures', 2)
-        self._incertain_bar = self._get_bar(total, 'Incertain', 3)
-
-    def _init_counters(self):
-        """Init all counters."""
-        self._errors = Value('i', 0)
-        self._successes = Value('i', 0)
-        self._incertains = Value('i', 0)
-
-    def _close_bars(self):
-        """Close all loading bars."""
-        self._total_bar.close()
-        self._success_bar.close()
-        self._failure_bar.close()
-        self._incertain_bar.close()
-
-    def render_baseline(self):
-        """Render baseline zipf."""
-        print("Calculating baseline.")
-        self._baseline = self._get_baseline()
-        print("\nNormalizing given zipfs")
-        for expected, zipfs in tqdm(
-            self._zipfs.items(),
-            desc="Normalizing zipfs",
-            unit=' class',
-            leave=True,
-            unit_scale=True
-        ):
-            for i, zipf in tqdm(
-                enumerate(zipfs),
-                total=len(zipfs),
-                desc="Normalizing zipfs of class %s" % expected,
-                unit=' zipf',
-                leave=True,
-                unit_scale=True
-            ):
-                zipfs[i] = (zipf / self._baseline).render()
-
-    def run(self, root, expected, metric, resolution=1e-4):
-        """Execute tests on all files under given root, using given metric."""
-        paths = self._get_paths(root)
-        total_paths = len(paths)
-        self._init_bars(total_paths)
-        self._init_counters()
-
-        self._cls_dist = Value('d', 0)
-        self._norm_cls_dist = Value('d', 0)
-        self._failures = Manager().list()
-
-        chunks = self._chunks(paths, ceil(total_paths / cpu_count()))
-        processes = [Process(target=self._tests, args=(
-            chk, expected, metric, resolution)) for chk in chunks]
-        [p.start() for p in processes]
-        [p.join() for p in processes]
-
-        self._close_bars()
-        print("\n" * 4)
-        return {
-            "total": total_paths,
-            "errors": self._errors.value,
-            "successes": self._successes.value,
-            "incertain": self._incertains.value,
-            "failures": list(self._failures)
-        }
-
-    def classify(self, path, metric, resolution=1e-4):
+    def classify(self, path, metric, res=1e-4):
         """Return the classification of text at given path."""
-        distance = self._get_distances(path, metric)
-
-        if abs(sub(*distances.values())) < resolution:
+        prediction, delta = self._predict(path, metric)
+        if delta < res:
             return None
-        return min(distances, key=distances.get)
+        return prediction

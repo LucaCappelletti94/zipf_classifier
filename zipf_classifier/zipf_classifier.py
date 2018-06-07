@@ -105,6 +105,10 @@ class ZipfClassifier:
         [p.join() for p in ps]
         r['mean_delta']/=len(ps)
         return dict(r)
+    
+    def clear(self):
+        """Clear the classifier training zipfs set."""
+        self._zipfs = {}
 
     def _get_zipf(self, path):
         """Return the zipf from a given path."""

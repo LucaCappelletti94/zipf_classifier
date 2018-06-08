@@ -74,12 +74,6 @@ class ZipfClassifier:
                 key = "Mistook %s for %s" % (expectation.capitalize(), prediction.capitalize())
                 mistakes[key] += 1
 
-            lock.acquire()
-            self._i.value += 1
-            lock.release()
-            sys.stderr.write('\rDone testing {0:%}'.format(
-                self._i.value / self._total))
-
         lock.acquire()
         results["success"] += success
         results["failures"] += failures
@@ -97,8 +91,6 @@ class ZipfClassifier:
         mgr.start()
         r = mgr.defaultdict(int)
         lock = Lock()
-        self._total = len(test_couples)
-        self._i = Value('i', 0)
         [ps.append(Process(target=self._test, args=(c, metric, r, lock)))
          for c in chunked]
         [p.start() for p in ps]

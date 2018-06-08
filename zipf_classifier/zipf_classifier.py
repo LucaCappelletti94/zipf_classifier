@@ -52,7 +52,7 @@ class ZipfClassifier:
 
     def chunks(self, l):
         """Yield successive n-sized chunks from l."""
-        n = math.ceil(len(l)/cpu_count())
+        n = math.ceil(len(l) / cpu_count())
         for i in range(0, len(l), n):
             yield l[i:i + n]
 
@@ -71,14 +71,15 @@ class ZipfClassifier:
                 unclassified += 1
             else:
                 failures += 1
-                key = "Mistook %s for %s" % (expectation.capitalize(), prediction.capitalize())
+                key = "Mistook %s for %s" % (
+                    expectation.capitalize(), prediction.capitalize())
                 mistakes[key] += 1
 
         lock.acquire()
         results["success"] += success
         results["failures"] += failures
         results["unclassified"] += unclassified
-        results["mean_delta"] += total_delta/len(test_couples)
+        results["mean_delta"] += total_delta / len(test_couples)
         for key, value in mistakes.items():
             results[key] += value
         lock.release()
@@ -95,9 +96,9 @@ class ZipfClassifier:
          for c in chunked]
         [p.start() for p in ps]
         [p.join() for p in ps]
-        r['mean_delta']/=len(ps)
+        r['mean_delta'] /= len(ps)
         return dict(r)
-    
+
     def clear(self):
         """Clear the classifier training zipfs set."""
         self._zipfs = {}
@@ -115,7 +116,7 @@ class ZipfClassifier:
         prediction = ""
         prediction_value = math.inf
         best_second_value = math.inf
-        
+
         for C, Z in self._zipfs.items():
             d = sum([metric(zipf, z) for z in Z]) / len(Z)
             if d < prediction_value:

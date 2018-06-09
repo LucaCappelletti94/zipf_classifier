@@ -57,6 +57,7 @@ class ZipfClassifier:
             yield l[i:i + n]
 
     def _test(self, test_couples, metric, results, lock):
+        """Execute tests in multiprocessing."""
         success = 0
         failures = 0
         unclassified = 0
@@ -71,8 +72,7 @@ class ZipfClassifier:
                 unclassified += 1
             else:
                 failures += 1
-                key = "Mistook %s for %s" % (
-                    expectation.capitalize(), prediction.capitalize())
+                key = "Mistook %s for %s" % (expectation, prediction)
                 mistakes[key] += 1
 
         lock.acquire()
@@ -112,6 +112,7 @@ class ZipfClassifier:
         return self._file_factory.run(path)
 
     def _predict(self, path, metric):
+        """Return the predicted class of file at given path."""
         zipf = self._get_zipf(path)
         prediction = ""
         prediction_value = math.inf

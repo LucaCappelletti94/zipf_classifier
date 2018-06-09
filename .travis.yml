@@ -1,5 +1,5 @@
 dist: trusty
-sudo: true
+sudo: false
 env:
   global:
     - CC_TEST_REPORTER_ID=8562302085acf798c8e77ea07b07c9acf79abe1f2ceed0a6cf869ac8994a533f
@@ -17,8 +17,8 @@ cache:
   directories:
   - "$HOME/.sonar/cache"
 install:
-    - sudo pip install -r test_requirements.txt
-    - sudo pip install .
+    - pip install -r test_requirements.txt
+    - pip install .
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter

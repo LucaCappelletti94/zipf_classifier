@@ -29,15 +29,16 @@ Working examples and explanation
 A `jupyter notebook`_ is available with a full explanation, three working examples and respective link to datasets.
 
 License
-========
+===================
 This package is licensed under MIT license.
 
 FAQs
-======
+===================
 Frequenctly asked questions down below.
 
 Generally, which metric do you suggest?
----------------------------------------
+----------------------------------------
+
 Experimental analysis suggests that, in particular when the **learning set** distributions contain a significant greater number of events than the distribution from the document you are trying to classify, the `intersection_squared_hellinger`_ seemed to work best.
 
 .. |travis| image:: https://travis-ci.org/LucaCappelletti94/zipf.png

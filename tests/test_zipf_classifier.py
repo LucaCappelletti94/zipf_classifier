@@ -5,7 +5,7 @@ from dictances import intersection_squared_hellinger, jensen_shannon
 from zipf_classifier import ZipfClassifier
 
 
-def test_classifier():
+def test_zipf_classifier():
     current_path = os.path.dirname(__file__)
     class_A = "A"
     class_B = "B"

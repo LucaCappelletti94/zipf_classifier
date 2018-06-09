@@ -1,2 +1,4 @@
-zipf
+pytest
+pytest-cov
+coveralls
 dictances

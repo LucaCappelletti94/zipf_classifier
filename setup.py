@@ -1,15 +1,16 @@
 """Setup to install zipf package."""
-from setuptools import setup, find_packages
+import os
+import re
 # To use a consistent encoding
 from codecs import open
 from os import path
-import os
-import re
+
+from setuptools import find_packages, setup
 
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the relevant file
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
+with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 

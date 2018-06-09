@@ -1,5 +1,5 @@
 dist: trusty
-sudo: false
+sudo: true
 env:
   global:
     - CC_TEST_REPORTER_ID=8562302085acf798c8e77ea07b07c9acf79abe1f2ceed0a6cf869ac8994a533f

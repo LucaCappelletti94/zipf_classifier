@@ -1,6 +1,8 @@
 \.DS_Store
 
-zipf_classifier/__pycache__/
+__pycache__/
+*.egg-info/
+dist/
 
 \.ipynb_checkpoints/
 authors/

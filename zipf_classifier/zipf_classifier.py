@@ -12,7 +12,6 @@ from os import walk
 from os.path import isdir, join
 from typing import Union
 
-from tqdm import tqdm
 from zipf import Zipf
 from zipf.factories import ZipfFromDir, ZipfFromFile
 

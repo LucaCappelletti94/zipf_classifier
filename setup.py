@@ -40,7 +40,7 @@ setup(
     # https://packaging.python.org/en/latest/single_source_version.html
     version=__version__,
 
-    description='A package to create a deterministic clssifier based on Zipf law',
+    description='A package to create a deterministic classifier based on Zipf law',
     long_description=long_description,
 
     # The project's main homepage.

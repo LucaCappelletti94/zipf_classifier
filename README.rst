@@ -28,6 +28,10 @@ Working examples and explanation
 --------------------------------
 A `jupyter notebook`_ is available with a full explanation, three working examples and respective link to datasets.
 
+License
+========
+This package is licensed under MIT license.
+
 FAQs
 ======
 Frequenctly asked questions down below.

@@ -10,6 +10,7 @@ from multiprocessing.managers import BaseManager, DictProxy
 from operator import sub
 from os import walk
 from os.path import isdir, join
+from typing import Union
 
 from tqdm import tqdm
 from zipf import Zipf
@@ -26,23 +27,24 @@ MyManager.register('defaultdict', defaultdict, DictProxy)
 class ZipfClassifier:
     """Classify dataset with given zipf distributions."""
 
-    def __init__(self, options=None):
+    def __init__(self, options: dict=None):
         """Return ZipfClassifier with given options."""
         if options is None:
             options = {}
         options["sort"] = False
         self._options = options
         self._zipfs = {}
+        self._lock = Lock()
         self._file_factory = ZipfFromFile(options=options)
         self._dir_factory = ZipfFromDir(options=options)
 
-    def __repr__(self):
+    def __repr__(self)->str:
         """Return representation of ZipfFromFile."""
         return dumps(self._options, indent=4, sort_keys=True)
 
     __str__ = __repr__
 
-    def add_zipf(self, path, expected):
+    def add_zipf(self, path: str, expected:  Union[int, str, bool]):
         """Add a zipf for the given class to the classifier."""
         zipf = Zipf.load(path).normalize()
         if expected in self._zipfs:
@@ -50,13 +52,13 @@ class ZipfClassifier:
         else:
             self._zipfs[expected] = [zipf]
 
-    def chunks(self, l):
+    def chunks(self, l: list)->'generator':
         """Yield successive n-sized chunks from l."""
         n = math.ceil(len(l) / cpu_count())
         for i in range(0, len(l), n):
             yield l[i:i + n]
 
-    def _test(self, test_couples, metric, results, lock):
+    def _test(self, test_couples: list, metric: 'function', results: dict):
         """Execute tests in multiprocessing."""
         success = 0
         failures = 0
@@ -75,24 +77,23 @@ class ZipfClassifier:
                 key = "Mistook %s for %s" % (expectation, prediction)
                 mistakes[key] += 1
 
-        lock.acquire()
+        self._lock.acquire()
         results["success"] += success
         results["failures"] += failures
         results["unclassified"] += unclassified
         results["mean_delta"] += total_delta / len(test_couples)
         for key, value in mistakes.items():
             results[key] += value
-        lock.release()
+        self._lock.release()
 
-    def test(self, test_couples, metric):
+    def test(self, test_couples: list, metric: 'function')->dict:
         """Run prediction test on all given test_couples."""
         chunked = self.chunks(test_couples)
         ps = []
         mgr = MyManager()
         mgr.start()
         r = mgr.defaultdict(int)
-        lock = Lock()
-        [ps.append(Process(target=self._test, args=(c, metric, r, lock)))
+        [ps.append(Process(target=self._test, args=(c, metric, r)))
          for c in chunked]
         [p.start() for p in ps]
         [p.join() for p in ps]
@@ -103,7 +104,7 @@ class ZipfClassifier:
         """Clear the classifier training zipfs set."""
         self._zipfs = {}
 
-    def _get_zipf(self, path):
+    def _get_zipf(self, path: str)->'Zipf':
         """Return the zipf from a given path."""
         if isdir(path):
             return self._dir_factory.run(path)
@@ -111,7 +112,7 @@ class ZipfClassifier:
             return Zipf.load(path)
         return self._file_factory.run(path)
 
-    def _predict(self, path, metric):
+    def _predict(self, path: str, metric: 'function'):
         """Return the predicted class of file at given path."""
         zipf = self._get_zipf(path)
         prediction = ""
@@ -128,7 +129,7 @@ class ZipfClassifier:
                 best_second_value = d
         return prediction, abs(prediction_value - best_second_value)
 
-    def classify(self, path, metric, res=1e-5):
+    def classify(self, path: str, metric: 'function', res: float=1e-5):
         """Return the classification of text at given path."""
         prediction, delta = self._predict(path, metric)
         if delta < res:

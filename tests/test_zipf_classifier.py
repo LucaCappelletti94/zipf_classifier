@@ -6,7 +6,7 @@ from zipf_classifier import ZipfClassifier
 
 
 def test_zipf_classifier():
-    current_path = os.path.dirname(__file__)
+    current_path = os.path.dirname(__file__) + "/../test_data"
     class_A = "A"
     class_B = "B"
     zipf_A = "%s/%s.json" % (current_path, class_A)

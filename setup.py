@@ -1,4 +1,4 @@
-"""Setup to install zipf package."""
+"""Setup to install the zipf_classifier package."""
 import os
 import re
 # To use a consistent encoding
@@ -91,6 +91,6 @@ def status(s):
     print('\033[1m{0}\033[0m'.format(s))
 
 
-status('Pushing git tags…')
+status('Pushing git tags')
 os.system('git tag v{0}'.format(__version__))
 os.system('git push --tags')

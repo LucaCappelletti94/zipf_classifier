@@ -28,8 +28,8 @@ def test_zipf_classifier():
     assert (
         {'success': 51, 'failures': 5, 'unclassified': 0,
             'mean_delta': 0.08164044130948692, 'Mistook B for A': 5},
-        {'success': 56, 'failures': 0, 'unclassified': 0,
-            'mean_delta': 5.481168422138327}
+        {'success': 55, 'failures': 1, 'unclassified': 0,
+            'mean_delta': 0.16704064864641854, 'Mistook B for A': 1}
     ) == (
         classifier.test(tests, jensen_shannon),
         classifier.test(tests, intersection_squared_hellinger)

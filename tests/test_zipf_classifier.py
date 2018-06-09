@@ -1,8 +1,18 @@
 import os
+from math import isclose
 
 from dictances import intersection_squared_hellinger, jensen_shannon
 
 from zipf_classifier import ZipfClassifier
+
+
+def close_dict(a: dict, b: dict)->bool:
+    for key, val in a.items():
+        if key not in b:
+            return False
+        if not isclose(val, b[key], abs_tol=1e-15):
+            return False
+    return True
 
 
 def test_zipf_classifier():
@@ -25,12 +35,9 @@ def test_zipf_classifier():
          for z in os.listdir(path_B) if z.endswith('.json')]
     tests = A + B
     # Running tests
-    assert (
-        {'success': 51, 'failures': 5, 'unclassified': 0,
-            'mean_delta': 0.08164044130948692, 'Mistook B for A': 5},
-        {'success': 55, 'failures': 1, 'unclassified': 0,
-            'mean_delta': 0.16704064864641854, 'Mistook B for A': 1}
-    ) == (
-        classifier.test(tests, jensen_shannon),
-        classifier.test(tests, intersection_squared_hellinger)
-    )
+    expected_JS = {'success': 51, 'failures': 5, 'unclassified': 0,
+                   'mean_delta': 0.08164044130948692, 'Mistook B for A': 5}
+    expected_ISH = {'success': 55, 'failures': 1, 'unclassified': 0,
+                    'mean_delta': 0.16704064864641854, 'Mistook B for A': 1}
+    assert close_dict(expected_ISH, classifier.test(tests, intersection_squared_hellinger)
+                      ) and close_dict(expected_JS, classifier.test(tests, jensen_shannon))

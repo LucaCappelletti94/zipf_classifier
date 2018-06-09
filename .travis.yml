@@ -8,6 +8,7 @@ addons:
     organization: "lucacappelletti94-github"
     token:
       secure: "nKpwaHGvbBzOT6Wpb0qGYwfEwH4JdV/IMjANVfbfSs4PPmbvWygx03HqfrQ8v2Ntca7yGXHm+kFRlHldUAna7xMffmVOUZhtp8FM53qyWdBLo9IlzGeAihOzLsq2is6U8wa0EYGT0RalcviCitVmrBXmufppBAThi6YNqZ8o3ud9loJKPeClWCAbW313XCDAIFL9qPO7oAGIfDIyaytSm93BOu3ZbAj8pMaw/sv6P6kxT5Yp5mTUx3Hecxbd+lJyBpEm70oHaujto38YEAYj2yE90+GXqrqXcOr1KCSGt9BrwDM/M+60G6cOjMY1fV2KV1wxaJL4jrWWWGoJWSgB+j7AV2pUV4+w3diWd4o0Z/yr/Iwt4UUJOQ8U6Aylm61MT5JOHX5HKTplOoMI21rqzHtT4xjA/If2+lABmtR1Ub6QWy+kNctjRz8t61tEoLxtFiFlct6SlEgOebtvbl6g8f+rePBODybpNthBVxcd8o6emW+QkMyklNPlniELSpSZtuRn7n090dWbrTzc8LNQ/lBpu42v3QxtC7u8UzkzHYr4VPEMnMgZKY06lQ2cD/1Ptw1thDUl8YljpChr6dHpcGDqHKh7NhhemBlvzgihmVAb78UlSl9aPwgwGORXhakUA1aHhyBLe+4GHdDjMXFUGt1l0Z8t57aHKJJXMTLKJDo="
+language: python
 python:
     - '3.6'
 jdk:

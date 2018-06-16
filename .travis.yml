@@ -2,7 +2,7 @@ dist: trusty
 sudo: false
 env:
   global:
-    - CC_TEST_REPORTER_ID=8562302085acf798c8e77ea07b07c9acf79abe1f2ceed0a6cf869ac8994a533f
+    - CC_TEST_REPORTER_ID=15f71b0a8fc0b58c9ec58b0b2f6b2fe17cf564885222a121ab179f25b97c4333
 addons:
   sonarcloud:
     organization: "lucacappelletti94-github"

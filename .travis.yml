@@ -24,7 +24,7 @@ script:
     - pytest --cov=./zipf_classifier --cov-report xml:coverage.xml
     - coverage combine
     - coverage report
-    - sonar-scanner -X
+    - sonar-scanner
 after_success:
     - coveralls
 

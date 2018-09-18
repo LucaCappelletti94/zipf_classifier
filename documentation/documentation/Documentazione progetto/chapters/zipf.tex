@@ -1,0 +1,12 @@
+\providecommand{\main}{..}
+\documentclass[\main/main.tex]{subfiles}
+\begin{document}
+
+\chapter{The Zipf}
+The zipf function \(z\) converts any document \(d \subseteq \D^m \) comprised of elements into a representative vector \(\bmv \subseteq \sqr{0, 1}^n, n \leq m \) based on the frequency of said elements in the given document. Taken in consideration the set of elements \(d \subseteq \D \) that comprise the document and \(d_{\neq} \subseteq d\) the set of distinct elements of the set \(d\), for any given element \(d_{\neq_{i}} \in d_{\neq}\), the value assigned by the zipf function is:
+\[
+  z(d_{\neq_{i}}):\D \rightarrow \R  = \frac{\arity{\forall d_i \in d: d_{\neq_{i}}=d_i}}{\#d}
+\]
+
+
+\end{document}

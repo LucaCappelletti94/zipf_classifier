@@ -1,0 +1,30 @@
+\providecommand{\main}{..}
+\documentclass[\main/main.tex]{subfiles}
+\begin{document}
+
+\chapter{The classifier}
+
+\section{Training the classifier}
+Given a set of training class-labeled elements \(T\), we proceed as follows:
+\begin{enumerate}
+  \item Convert every document \(d \in T\) into its representative vector \(\bmv \).
+  \item Execute, for each class \(C_j\) of vectors, a \textbf{PCA reduction} from the initial vector size (sometimes up to thousands) to a few decades.
+  \item Using the reduced classes, iterate for each class \(C_{r_j}\) the \textbf{KMeans} algorithm incrementing the number of the clusters \(Q_i\) \(k\) until the value of the mean density of points \(\bar{\rho} \) increases, with \(\bar{\rho} \) being defined as:
+        \[
+          \bar{\rho}_{jk} = \frac{1}{k} \sum_{i=1}^k \rho_{{jk}_i} = \frac{1}{k} \sum_{i=1}^k \rnd{\frac{\arity{\bmv \in C_{r_j}:\bmv \in Q_i}}{\#C_{r_j}}}^k \cdot \frac{1}{r_{Q_i}^2} \qquad r_{Q_i}^2 = \frac{1}{n} \sum_{h=1}^{n} (\bmc_i - \bmp_h)^2
+        \]
+        Where \(r_{Q_i}\) is the approximated radius of the cluster \(Q_i\), using the farthest \(n\) frontier points \(p_f\).
+        This gives an approximate number \(k\) of centroids that describe the given class.\label{kmeans}
+  \item For every class \(C_j\), given a percentage of points \(p\), we choose a number \(r=p\cdot \# C_j\) of representative vectors, distributed in weighted fashion thorough the class clusters determined at the point\ref{kmeans}. To this set of points, we add also the clusters centroids.
+  \item We move every point \(\bmp \) of every class \(C_j\) towards their centroid \(\bmc_i\) of a constant percentage \(\alpha \) along the segment \(\bar{PC_i}\).
+\end{enumerate}
+
+\section{Classifying a document}
+To classify a given a document \(d\) we proceed as follows:
+\begin{enumerate}
+  \item Convert the document \(d\) to a zipf representative vector: \(\bmv = z(d)\).
+  \item The document is classified as the closest representative point in the classifier model.
+\end{enumerate}
+
+
+\end{document}

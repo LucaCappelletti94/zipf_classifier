@@ -1,0 +1,13 @@
+{
+  "title": "Progetto per Sistemi Intelligenti",
+  "professors": [{
+      "name": "Nunzio Alberto",
+      "surname": "Borghese"
+	}],
+  "authors": [
+    {
+      "name": "Luca",
+      "surname": "Cappelletti"
+    }
+  ]
+}

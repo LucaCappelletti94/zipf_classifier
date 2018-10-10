@@ -146,7 +146,7 @@ class ZipfClassifier:
         distances = np.squeeze(
             np.asarray(
                 np.power(points - centroids[predictions], 2).sum(axis=1)))
-        for i in tqdm(range(k), leave=False):
+        for i in tqdm(range(k), leave=False, total=k):
             cluster = points[predictions == i]
             Ni = cluster.shape[0]
             ni = np.floor(p * Ni).astype(int)

@@ -9,7 +9,7 @@
 \subsection{Convert documents to vector representation}
 Given a set of training class-labeled elements \(T\), we convert the documents, treated as \textit{bag of elements}, to enumeration-sorted frequency vectors.
 
-Given a document composed of \(n=\#d\) elements \(d = \crl{e_1, e_2, \ldots, e_n}\), first we define \(d_\neq \subseteq d\) as the set of distinct elements in \(d\). Then, we map to every distinct element its normalized arity in the set \(d\):
+Given a document composed of \(n=\#d\) elements \(d = \crl{e_1, e_2, \ldots, e_n}\), first we define \(d_\neq \subseteq d\) as the set of distinct elements in \(d\). Then, we map to every distinct element its normalized cardinality in the set \(d\):
 \[
 	z(e_i) = \frac{\arity{e_j \in d: e_j=e_i}}{n}
 \]
@@ -34,7 +34,7 @@ For the high dimensionality and number of the vectors, iterating multiple times 
 		1                                                & \text{else}
 	\end{cases}
 \]
-Where \(r_{Q_i}\) is the approximated radius of the cluster \(Q_i\), using the farthest \(n\) frontier points \(p_f\).
+Where \(r_{Q_i}\) is the approximated radius of the cluster \(Qk_i\), using the farthest \(n\) frontier points \(p_f\).
 
 \paragraph*{Does the prediction hold?}
 While the metric on two dimensions reduction seemed to work, when iterated on increasingly larger number of dimensions, with the exception of strongly clustered data, it did not much better than a random selection.

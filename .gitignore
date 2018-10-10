@@ -5,15 +5,7 @@ __pycache__/
 dist/
 
 \.ipynb_checkpoints/
-authors/
-periods/
-recipes/
-authors-testing/
-periods-testing/
-recipes-testing/
-authors-training/
-periods-training/
-recipes-training/
+datasets/
 
 # Latex files
 

@@ -1,136 +1,226 @@
-"""Classify dataset with given zipf distributions."""
-import math
-import operator
-import sys
-from collections import defaultdict
-from glob import glob
-from json import dumps
-from multiprocessing import Lock, Process, Value, cpu_count
-from multiprocessing.managers import BaseManager, DictProxy
-from operator import sub
-from os import walk
-from os.path import isdir, join
-from typing import Union
+import re
+import json
+import os
+import numpy as np
+from sklearn.cluster import KMeans
+from scipy.sparse import csr_matrix, save_npz, vstack
+from sklearn.metrics.pairwise import cosine_distances, euclidean_distances
+from sklearn.metrics import confusion_matrix
+from collections import Counter
 
-from zipf import Zipf
-from zipf.factories import ZipfFromDir, ZipfFromFile
-
-
-class MyManager(BaseManager):
-    pass
-
-
-MyManager.register('defaultdict', defaultdict, DictProxy)
+from tqdm import tqdm
 
 
 class ZipfClassifier:
-    """Classify dataset with given zipf distributions."""
 
-    def __init__(self, options: dict=None):
-        """Return ZipfClassifier with given options."""
-        if options is None:
-            options = {}
-        options["sort"] = False
-        self._options = options
-        self._zipfs = {}
-        self._lock = Lock()
-        self._file_factory = ZipfFromFile(options=options)
-        self._dir_factory = ZipfFromDir(options=options)
+    def __init__(self):
+        """Create a new instance of ZipfClassifier"""
+        self._classifier = None
+        self._classes = None
+        self._regex = re.compile(r"\W+")
 
-    def __repr__(self)->str:
-        """Return representation of ZipfFromFile."""
-        return dumps(self._options, indent=4, sort_keys=True)
+    def _get_directories(self, path: str) -> list:
+        """Return the directories inside the first level of a given path.
+            path:str, the path from where to load the first level directories list.
+        """
+        return next(os.walk(path))[1]
 
-    __str__ = __repr__
+    def _find_files(self, root: str) -> list:
+        """Return leaf files from given `root`."""
+        print("Searching files within directory {root}".format(root=root))
+        return [[
+            "{path}/{file}".format(path=path, file=file) for file in files
+        ] for path, dirs, files in os.walk(root) if not dirs]
 
-    def add_zipf(self, path: str, expected:  Union[int, str, bool]):
-        """Add a zipf for the given class to the classifier."""
-        zipf = Zipf.load(path).normalize()
-        if expected in self._zipfs:
-            self._zipfs[expected].append(zipf)
-        else:
-            self._zipfs[expected] = [zipf]
+    def _counter_from_path(self, files: list) -> Counter:
+        """Return a counter representing the files in the given directory.
+            files:list, paths for the files to load.
+        """
+        c = Counter()
+        for file in files:
+            with open(file, "r", encoding="utf-8") as f:
+                c.update((w for w in re.split(self._regex, f.read()) if w))
+        return c
 
-    def chunks(self, l: list)->'generator':
-        """Yield successive n-sized chunks from l."""
-        n = math.ceil(len(l) / cpu_count())
-        for i in range(0, len(l), n):
-            yield l[i:i + n]
+    def _counters_from_root(self, root: str) -> list:
+        """Return list of counters for the documents found in given root."""
+        return [
+            self._counter_from_path(files) for files in self._find_files(root)
+        ]
 
-    def _test(self, test_couples: list, metric: 'function', results: dict):
-        """Execute tests in multiprocessing."""
-        success = 0
-        failures = 0
-        unclassified = 0
-        total_delta = 0
-        mistakes = defaultdict(int)
-        for path, expectation in test_couples:
-            prediction, delta = self.classify(path, metric)
-            total_delta += delta
-            if prediction == expectation:
-                success += 1
-            elif prediction is None:
-                unclassified += 1
-            else:
-                failures += 1
-                key = "Mistook %s for %s" % (expectation, prediction)
-                mistakes[key] += 1
+    def _counters_to_frequencies(self, counters: list) -> csr_matrix:
+        """Return a csr_matrix representing sorted counters as frequencies.
+            counters:list, the list of Counters objects from which to create the csr_matrix
+        """
+        print("Converting {n} counters to sparse matrix.".format(
+            n=len(counters)))
+        keys = self._keys
+        frequencies = np.empty((len(counters), len(keys)))
+        for j, counter in tqdm(enumerate(counters), leave=False):
+            if len(counter) == 0:
+                continue
+            indices, values = np.array(
+                [(keys[k], v) for k, v in counter.items() if k in keys]).T
+            frequencies[j][indices] = values
+            frequencies[j] /= np.sum(frequencies[j])
+        return csr_matrix(frequencies)
 
-        self._lock.acquire()
-        results["success"] += success
-        results["failures"] += failures
-        results["unclassified"] += unclassified
-        results["mean_delta"] += total_delta / len(test_couples)
-        for key, value in mistakes.items():
-            results[key] += value
-        self._lock.release()
+    def _build_dataset(self, root: str) -> csr_matrix:
+        """Return a csr_matrix with the vector representation of given dataset.
+            root:str, root of dataset to load
+        """
+        return self._counters_to_frequencies(
+            self._counters_from_root(root)) / self._corpus_frequencies
 
-    def test(self, test_couples: list, metric: 'function')->dict:
-        """Run prediction test on all given test_couples."""
-        chunked = self.chunks(test_couples)
-        ps = []
-        mgr = MyManager()
-        mgr.start()
-        r = mgr.defaultdict(int)
-        [ps.append(Process(target=self._test, args=(c, metric, r)))
-         for c in chunked]
-        [p.start() for p in ps]
-        [p.join() for p in ps]
-        r['mean_delta'] /= len(ps)
-        return dict(r)
+    def _build_keymap(self, counters: list) -> dict:
+        """Return an enumeration of the given counter keys as dictionary.
+            counters:list, the list of Counters objects from which to create the keymap
+        """
+        print("Determining keyset from {n} counters.".format(n=len(counters)))
+        keyset = set()
+        for counter in tqdm(counters, leave=False):
+            keyset |= set(counter)
+        self._keys = {k: i for i, k in enumerate(keyset)}
 
-    def clear(self):
-        """Clear the classifier training zipfs set."""
-        self._zipfs = {}
+    def _build_corpus_frequencies(self, matrices):
+        """Build the corpus frequencies vector."""
+        corpus = vstack(matrices)
+        self._corpus_frequencies = corpus.sum(axis=0) / corpus.shape[0]
 
-    def _get_zipf(self, path: str)->'Zipf':
-        """Return the zipf from a given path."""
-        if isdir(path):
-            return self._dir_factory.run(path)
-        if path.endswith('.json'):
-            return Zipf.load(path)
-        return self._file_factory.run(path)
+    def _build_training_dataset(self, root: str) -> dict:
+        """Return a dictionary representing the training dataset at the given root."""
+        dataset_counters = {
+            document_class:
+            self._counters_from_root("{root}/{document_class}".format(
+                root=root, document_class=document_class))
+            for document_class in self._get_directories(root)
+        }
 
-    def _predict(self, path: str, metric: 'function'):
-        """Return the predicted class of file at given path."""
-        zipf = self._get_zipf(path)
-        prediction = ""
-        prediction_value = math.inf
-        best_second_value = math.inf
+        self._build_keymap([
+            counter for counters in dataset_counters.values()
+            for counter in counters
+        ])
 
-        for C, Z in self._zipfs.items():
-            d = sum([metric(zipf, z) for z in Z]) / len(Z)
-            if d < prediction_value:
-                prediction = C
-                best_second_value = prediction_value
-                prediction_value = d
-            elif d < best_second_value:
-                best_second_value = d
-        return prediction, abs(prediction_value - best_second_value)
+        sparse_matrices = {
+            key: self._counters_to_frequencies(counters)
+            for key, counters in dataset_counters.items()
+        }
 
-    def classify(self, path: str, metric: 'function', res: float=1e-5):
-        """Return the classification of text at given path."""
-        prediction, delta = self._predict(path, metric)
-        if delta < res:
-            return None, delta
-        return prediction, delta
+        self._build_corpus_frequencies(
+            [matrix for matrix in sparse_matrices.values()])
+
+        return {
+            key: matrix / self._corpus_frequencies
+            for key, matrix in sparse_matrices.items()
+        }
+
+    def _kmeans(self, k: int, points: csr_matrix,
+                iterations: int = 50) -> tuple:
+        """Return a tuple containing centroids and predictions for given data with k centroids.
+            k:int, number of clusters to use for k-means
+            points:csr_matrix, points to run kmeans on
+            iterations:int, number of iterations of kmeans
+        """
+        kmeans = KMeans(n_clusters=k, random_state=42, max_iter=iterations)
+        kmeans.fit(points)
+        return kmeans.cluster_centers_, kmeans.predict(points)
+
+    def _representative_points(self,
+                               points: csr_matrix,
+                               p: float = 0.1,
+                               a: float = 0.2) -> csr_matrix:
+        """Return representative points for given set, using given percentage `p` and moving points of `a`.
+            points:csr_matrix, points from which to extract the representative points
+            p:float, percentage of points to use as representatives
+            a:float, percentage of distance to move representatives towards respective centroid
+        """
+
+        N = points.shape[0]
+        k = np.ceil(N * p**2).astype(int)
+
+        centroids, predictions = self._kmeans(k, points)
+
+        representatives = centroids
+
+        distances = np.squeeze(
+            np.asarray(
+                np.power(points - centroids[predictions], 2).sum(axis=1)))
+        for i in tqdm(range(k), leave=False):
+            cluster = points[predictions == i]
+            Ni = cluster.shape[0]
+            ni = np.floor(p * Ni).astype(int)
+            representatives = np.vstack([
+                representatives, cluster[np.argpartition(
+                    distances[predictions == i].reshape(
+                        (Ni, )), ni)[-ni:]] * (1 - a) + centroids[i] * a
+            ])
+        return csr_matrix(representatives)
+
+    def _build_classifier(self, dataset: dict) -> tuple:
+        """Build classifier for given dataset.
+            dataset:str, root of given dataset
+        """
+        print("Determining representative points for {n} classes.".format(
+            n=len(dataset.keys())))
+        return np.array(list(dataset.keys())), [
+            self._representative_points(data)
+            for data in tqdm(dataset.values(), leave=False)
+        ]
+
+    def fit(self, path: str):
+        """Load the dataset at the given path and fit classifier with it.
+            path:str, the path from where to load the dataset
+        """
+        self._classes, self._representatives = self._build_classifier(
+            self._build_training_dataset(path))
+
+    def save(self, directory: str):
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        [
+            save_npz(
+                "{directory}/{matrix_class}.npz".format(
+                    directory=directory, matrix_class=matrix_class), matrix)
+            for matrix, matrix_class in zip(self._classes, self._classifier)
+        ]
+        with open(
+                "{directory}/keys.json".format(directory=directory), "w") as f:
+            json.dump(self._keys, f)
+
+    def classify(self, path: str) -> list:
+        """Load the dataset at the given path and run trained classifier with it.
+            path:str, the path from where to load the dataset
+        """
+        dataset = self._build_dataset(path)
+        return self._classes[np.argmin(
+            [
+                np.min(euclidean_distances(dataset, c), axis=1)
+                for c in self._representatives
+            ],
+            axis=0)]
+
+    def test(self, path: str) -> list:
+        """Run test on the classifier over given directory, considering top level as classes.
+            path:str, the path from where to run the test.
+        """
+        directories = self._get_directories(path)
+        print("Running {n} tests with the data in {path}.".format(
+            n=len(directories), path=path))
+        predictions = [(directory,
+                        self.classify("{path}/{directory}".format(
+                            path=path, directory=directory)))
+                       for directory in tqdm(directories, leave=False)]
+        y_true = np.array([])
+        y_pred = np.array([])
+        labels = []
+        for original, prediction in predictions:
+            y_true = np.hstack([y_true, np.repeat(original, prediction.size)])
+            y_pred = np.hstack([y_pred, prediction])
+            labels.append(original)
+        matrix = confusion_matrix(y_true, y_pred, labels=labels)
+
+        with open("{path}/confusion_matrix.json".format(path=path), "w") as f:
+            json.dump({
+                "confusion_matrix": matrix.tolist(),
+                "labels": labels
+            }, f)

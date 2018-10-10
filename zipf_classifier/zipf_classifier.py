@@ -56,7 +56,7 @@ class ZipfClassifier:
             n=len(counters)))
         keys = self._keys
         frequencies = np.empty((len(counters), len(keys)))
-        for j, counter in tqdm(enumerate(counters), leave=False):
+        for j, counter in tqdm(enumerate(counters), leave=False, total=len(counters)):
             if len(counter) == 0:
                 continue
             indices, values = np.array(
@@ -121,7 +121,8 @@ class ZipfClassifier:
             points:csr_matrix, points to run kmeans on
             iterations:int, number of iterations of kmeans
         """
-        kmeans = KMeans(n_clusters=k, random_state=42, max_iter=iterations)
+        kmeans = KMeans(n_clusters=k, random_state=42,
+                        max_iter=iterations, n_jobs=-1)
         kmeans.fit(points)
         return kmeans.cluster_centers_, kmeans.predict(points)
 

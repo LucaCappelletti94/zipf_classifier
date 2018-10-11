@@ -6,6 +6,8 @@ dist/
 
 \.ipynb_checkpoints/
 datasets/
+testing-*/
+training-*/
 
 # Latex files
 

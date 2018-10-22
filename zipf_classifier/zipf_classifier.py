@@ -79,7 +79,7 @@ class ZipfClassifier:
                 [(keys[k], v) for k, v in counter.items() if k in keys]).T
             row_sum = np.sum(values)
             if row_sum:
-                frequencies[i][indices] = values/row_sum
+                frequencies[i][indices] = values / row_sum
                 i += 1
         return csr_matrix(frequencies[:i])
 
@@ -256,9 +256,9 @@ class ZipfClassifier:
         maximum_x, maximum_y = np.max(reduced, axis=0)
         minimum_x, minimum_y = np.min(reduced, axis=0)
         margin = 0.05
-        margin_x, margin_y = maximum_x*margin, maximum_y*margin
+        margin_x, margin_y = maximum_x * margin, maximum_y * margin
         maximum_x, maximum_y, minimum_x, minimum_y = maximum_x + \
-            margin_x, maximum_y+margin_y, minimum_x-margin_x, minimum_y-margin_y
+            margin_x, maximum_y + margin_y, minimum_x - margin_x, minimum_y - margin_y
         df = pd.concat(
             [
                 pd.DataFrame(data=reduced, columns=['a', 'b']),
@@ -323,18 +323,20 @@ class ZipfClassifier:
             "{path}/{title}.png".format(path=path, title=title))
         plt.clf()
 
-    def _heatmap(self, data: np.matrix, labels: list, title: str):
+    def _heatmap(self, data: np.matrix, labels: list, title: str, fmt: str):
         """ Plot given matrix as heatmap.
             data:np.matrix, the matrix to be plotted.
             labels:list, list of labels of matrix data.
-            title:str, title of given image
+            title:str, title of given image.
+            fmt:str, string formatting of digids
         """
+        plt.figure(figsize=(8, 8))
         heatmap(
             data,
             xticklabels=labels,
             yticklabels=labels,
             annot=True,
-            fmt='0.3g',
+            fmt=fmt,
             cmap="YlGnBu",
             cbar=False)
         plt.yticks(rotation=0)
@@ -350,12 +352,12 @@ class ZipfClassifier:
         """
         if not os.path.exists(path):
             os.makedirs(path)
-        self._heatmap(confusion_matrix, labels, title)
+        self._heatmap(confusion_matrix, labels, title, "d")
         plt.savefig("{path}/{title}.png".format(path=path, title=title))
         plt.clf()
         normalized_title = "Normalized {title}".format(title=title)
         self._heatmap(confusion_matrix.astype(np.float) /
-                      confusion_matrix.sum(axis=1)[:, np.newaxis], labels, normalized_title)
+                      confusion_matrix.sum(axis=1)[:, np.newaxis], labels, normalized_title, "0.4g")
         plt.savefig("{path}/{title}.png".format(path=path,
                                                 title=normalized_title))
         plt.clf()

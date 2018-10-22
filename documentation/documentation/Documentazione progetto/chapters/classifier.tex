@@ -22,7 +22,7 @@ Given an arbitrary percentage of points \(p \in \sqr{0,1}\) and an arbitrary dis
 \]
 This way the centroids surely distribute among the different points, following their density. If the points are, in truth, a unique cluster, the centroids will distribute themselves in an uniform fashion.
 
-Then, we select for each cluster \(Q_i \in \crl{Q_1, \ldots, Q_k}\) a number \(\floor{\arity{p \in C_j: p \in Q_i}\cdot p}\) points on the border \(B_i\). We move each point \(p \in B_i\) of an amount proportional to the distance from the point to its centroid \(c_i\):\(\alpha \cdot L^2\rnd{p, c_i}\) towards its centroid.
+Then, we select following a random uniform distribution for each cluster \(Q_i \in \crl{Q_1, \ldots, Q_k}\) a number \(\floor{\arity{p \in C_j: p \in Q_i}\cdot p}\) points. We move each point \(p\) of an amount proportional to the distance from the point to its centroid \(c_i\):\(\alpha \cdot L^2\rnd{p, c_i}\) towards its centroid.
 
 \subsubsection{Using a metric to choose k}
 For the high dimensionality and number of the vectors, iterating multiple times \textit{KMeans} searching for an optimal \(k\) following any given metric has an high time cost. For this reason, an attempt using \textbf{PCA} to reduce the dimensionality and predict the number of clusters in high dimensionality space using a density metric was made.

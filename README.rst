@@ -6,17 +6,13 @@ Zipf classifier
 
 Introduction
 -------------
-ZipfClassifier is a classifier that, *even though in principle usable on any distribution*, leverages the assumption that some kind of datasets su as:
+ZipfClassifier is a classifier that, *even though in principle usable on any distribution*, leverages the assumption that some kind of datasets such as as:
 
 - texts
 - `images (paper here)`_
 - `spoken language (paper here)`_
 
 follow the `Zipf law`_.
-
-Dependecies
-------------
-ZipfClassifier uses `zipf`_, another package o' mine. I also suggest to use `dictances`_ for the metrics used in classification.
 
 Installation
 ------------
@@ -26,20 +22,12 @@ Installation
 
 Working examples and explanation
 --------------------------------
-A `jupyter notebook`_ is available with a full explanation, three working examples and respective link to datasets.
+A `documentation`_ is available with a full explanation of the dataset working.
 
 License
 ===================
 This package is licensed under MIT license.
 
-FAQs
-===================
-Frequenctly asked questions down below.
-
-Generally, which metric do you suggest?
-----------------------------------------
-
-Experimental analysis suggests that, in particular when the **learning set** distributions contain a significant greater number of events than the distribution from the document you are trying to classify, the `intersection_squared_hellinger`_ seemed to work best.
 
 .. |travis| image:: https://travis-ci.org/LucaCappelletti94/zipf.png
    :target: https://travis-ci.org/LucaCappelletti94/zipf_classifier
@@ -65,5 +53,4 @@ Experimental analysis suggests that, in particular when the **learning set** dis
 .. _images (paper here): http://www.dcs.warwick.ac.uk/bmvc2007/proceedings/CD-ROM/papers/paper-288.pdf
 .. _spoken language (paper here): http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0033993
 .. _Zipf law: https://en.wikipedia.org/wiki/Zipf%27s_law
-.. _jupyter notebook: https://github.com/LucaCappelletti94/zipf_classifier/blob/master/readme%20notebook%20full%20example%20and%20explanation.ipynb
-.. _intersection_squared_hellinger: https://github.com/LucaCappelletti94/dictances/blob/master/dictances/intersection_squared_hellinger.py
+.. _documentation: https://github.com/LucaCappelletti94/zipf_classifier/blob/master/documentation/documentation/Documentazione%20progetto/main.pdf

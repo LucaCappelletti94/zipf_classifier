@@ -235,7 +235,7 @@ class ZipfClassifier:
                 "{path}/keys.json".format(path=path), "w") as f:
             json.dump(self._keys, f)
 
-    def _setup_axis(self, subplot_width:int, suplot_position:int, title:str, x_margins:Tuple[float, float], y_margins:Tuple[float, float])->mpl.axes.SubplotBase:
+    def _setup_axis(self, subplot_width: int, suplot_position: int, title: str, x_margins: Tuple[float, float], y_margins: Tuple[float, float])->mpl.axes.SubplotBase:
         """Return characterized subplot axis in given position.
             subplot_width:int, length of subplot rows
             suplot_position:int, position of axis in given subplot
@@ -278,11 +278,14 @@ class ZipfClassifier:
         n = len(labels) + 1
 
         cumulative_original_ax = self._setup_axis(n, n, "Originals", *margins)
-        cumulative_prediction_ax = self._setup_axis(n, 2*n, "Predictions", *margins)
+        cumulative_prediction_ax = self._setup_axis(
+            n, 2*n, "Predictions", *margins)
 
         for i, (label, color) in enumerate(zip(labels, colors), 1):
-            original_ax = self._setup_axis(n, i, "Original {label}".format(label=label), *margins)
-            prediction_ax = self._setup_axis(n, n+1, "Prediction {label}".format(label=label), *margins)
+            original_ax = self._setup_axis(
+                n, i, "Original {label}".format(label=label), *margins)
+            prediction_ax = self._setup_axis(
+                n, n+1, "Prediction {label}".format(label=label), *margins)
             for ax, column in zip(((original_ax, cumulative_original_ax), (prediction_ax, cumulative_prediction_ax)), columns):
                 indices = df[column] == label
                 ax.scatter(
@@ -296,14 +299,13 @@ class ZipfClassifier:
             "{path}/{title}.png".format(path=path, title=title))
         plt.clf()
 
-    def _heatmap(self, data: np.matrix, labels: list, title: str, fmt: str):
+    def _heatmap(self, axis: mpl.axes.SubplotBase, data: np.matrix, labels: list, title: str, fmt: str):
         """ Plot given matrix as heatmap.
             data:np.matrix, the matrix to be plotted.
             labels:list, list of labels of matrix data.
             title:str, title of given image.
             fmt:str, string formatting of digids
         """
-        plt.figure(figsize=(8, 8))
         heatmap(
             data,
             xticklabels=labels,
@@ -312,9 +314,9 @@ class ZipfClassifier:
             fmt=fmt,
             cmap="YlGnBu",
             cbar=False)
-        plt.yticks(rotation=0)
-        plt.xticks(rotation=0)
-        plt.title(title)
+        axis.yticks(rotation=0)
+        axis.xticks(rotation=0)
+        axis.set_title(title)
 
     def _plot_confusion_matrices(self, confusion_matrix: np.matrix, labels: list, path: str, title: str):
         """ Plot default and normalized confusion matrix.
@@ -325,27 +327,42 @@ class ZipfClassifier:
         """
         if not os.path.exists(path):
             os.makedirs(path)
-        self._heatmap(confusion_matrix, labels, title, "d")
-        plt.savefig("{path}/{title}.png".format(path=path, title=title))
-        plt.clf()
-        normalized_title = "Normalized {title}".format(title=title)
-        self._heatmap(confusion_matrix.astype(np.float) /
-                      confusion_matrix.sum(axis=1)[:, np.newaxis], labels, normalized_title, "0.4g")
+        plt.figure(figsize=(8, 4))
+        self._heatmap(plt.subplot(1, 1, 1), confusion_matrix,
+                      labels, "Confusion matrix", "d")
+        self._heatmap(plt.subplot(1, 1, 2), confusion_matrix.astype(np.float) /
+                      confusion_matrix.sum(axis=1)[:, np.newaxis], labels, "Normalized confusion matrix", "0.4g")
+        plt.suptitle(title)
         plt.savefig("{path}/{title}.png".format(path=path,
-                                                title=normalized_title))
+                                                title=title))
         plt.clf()
 
-    def _save_results(self, dataset, originals, predictions, name):
-        path = "results"
-        if not os.path.exists(path):
-            os.makedirs(path)
-        save_npz("{path}/{name}-dataset.npz".format(path=path, name=name), dataset)
-        np.save("{path}/{name}-originals.npz".format(path=path,
-                                                     name=name), originals)
-        np.save("{path}/{name}-predictions.npz".format(path=path,
-                                                       name=name), predictions)
+    def _save_results(self, directory: str, name: str, dataset: csr_matrix, originals: np.ndarray, predictions: np.ndarray, labels: List[str]):
+        """Save classification results.
+            directory:str, path to directory where to save results
+            name:str, project name
+            dataset:csr_matrix, classified compiled dataset
+            originals:np.ndarray, original labels
+            predictions:np.ndarray, predicted labels
+            labels:List[str], list of unique labels
+        """
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        save_npz(
+            "{directory}/{name}-dataset.npz".format(directory=directory, name=name), dataset)
+        np.save("{directory}/{name}-originals.npz".format(directory=directory,
+                                                          name=name), originals)
+        np.save("{directory}/{name}-predictions.npz".format(directory=directory,
+                                                            name=name), predictions)
+        self._svd(dataset, originals, predictions, labels,
+                  "results/truncated_svd", name)
+        self._plot_confusion_matrices(confusion_matrix(
+            originals, predictions, labels=labels), labels, "results/confusion_matrices", name)
 
     def _classify(self, dataset: csr_matrix) -> Tuple[csr_matrix, np.ndarray]:
+        """Return a tuple with classified dataset and classification vector.
+            dataset:csr_matrix, dataset to classify
+        """
         return dataset, self._classes[np.argmin(
             [
                 np.min(euclidean_distances(dataset, c), axis=1)
@@ -378,15 +395,8 @@ class ZipfClassifier:
         directories = self._get_directories(path)
         print("Running {n} tests with the data in {path}.".format(
             n=len(directories), path=path))
-        labels, datasets, datasets_predictions = zip(*[(directory, *self.classify_directory("{path}/{directory}".format(
+        labels, datasets, predictions = zip(*[(directory, *self.classify_directory("{path}/{directory}".format(
             path=path, directory=directory)))
             for directory in directories])
-        originals = np.repeat(labels, [len(p) for p in datasets_predictions])
-        predictions = np.concatenate(datasets_predictions)
-        full_dataset = vstack(datasets)
-        name = path.replace("/", "_")
-        self._save_results(full_dataset, originals, predictions, name)
-        self._svd(full_dataset, originals, predictions, labels,
-                  "results/truncated_svd", name)
-        self._plot_confusion_matrices(confusion_matrix(
-            originals, predictions, labels=labels), labels, "results/confusion_matrices", name)
+        self._save_results("result", path.replace("/", "_"), vstack(datasets), np.repeat(
+            labels, [len(p) for p in predictions]), np.concatenate(predictions), labels)

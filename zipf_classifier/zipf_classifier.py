@@ -392,13 +392,17 @@ class ZipfClassifier:
         """
         return self.classify_texts([text])
 
-    def test(self, path: str, seed: int):
-        """Run test on the classifier over given directory, considering top level as classes.
-            path:str, the path from where to run the test.
+    def set_seed(self, seed: int):
+        """Set random seed.
             seed:int, the random seed to use for the test.
         """
         np.random.seed(seed)
         random.seed(seed)
+
+    def test(self, path: str):
+        """Run test on the classifier over given directory, considering top level as classes.
+            path:str, the path from where to run the test.
+        """
         directories = self._get_directories(path)
         print("Running {n} tests with the data in {path}.".format(
             n=len(directories), path=path))

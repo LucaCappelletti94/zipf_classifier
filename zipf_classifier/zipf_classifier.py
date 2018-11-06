@@ -290,14 +290,15 @@ class ZipfClassifier:
                 n, i, "Original {label}".format(label=label), *margins)
             prediction_ax = self._setup_axis(
                 n, n+1, "Prediction {label}".format(label=label), *margins)
-            for ax, column in zip(((original_ax, cumulative_original_ax), (prediction_ax, cumulative_prediction_ax)), columns):
-                indices = df[column] == label
-                ax.scatter(
-                    df.loc[indices, 'a'],
-                    df.loc[indices, 'b'],
-                    c=color,
-                    label=label,
-                    s=20)
+            for axs, column in zip(((original_ax, cumulative_original_ax), (prediction_ax, cumulative_prediction_ax)), columns):
+                for ax in axs:
+                    indices = df[column] == label
+                    ax.scatter(
+                        df.loc[indices, 'a'],
+                        df.loc[indices, 'b'],
+                        c=color,
+                        label=label,
+                        s=20)
 
         plt.savefig(
             "{directory}/{title} - Truncated SVD.png".format(directory=directory, title=title))

@@ -40,13 +40,20 @@ class ZipfClassifier:
         """
         return next(os.walk(path))[1]
 
-    def _lazy_file_loader(self, path: str, files: List)->Generator:
+    def _lazy_file_loader(self, directory: str, files: List[str])->Generator:
+        """Yield lazily loaded files.
+            directory:str, the directory of given files list
+            files: List[str], list of files
+        """
         for file in files:
-            with open("{path}/{file}".format(path=path, file=file), "r") as f:
+            with open("{directory}/{file}".format(directory=directory, file=file), "r") as f:
                 yield f.read()
 
-    def _lazy_directory_loader(self, root: str)->Generator:
-        return (self._lazy_file_loader(path, files) for path, dirs, files in os.walk(root) if not dirs)
+    def _lazy_directory_loader(self, directory: str)->Generator:
+        """Yield lazily directory content
+            directory:str, directory from where to load the documents
+        """
+        return (self._lazy_file_loader(path, files) for path, dirs, files in os.walk(directory) if not dirs)
 
     def _counter_from_path(self, files: list) -> Counter:
         """Return a counter representing the files in the given directory.
@@ -251,13 +258,18 @@ class ZipfClassifier:
         ax.legend(loc='upper right')
         return ax
 
-    def _svd(self, dataset: csr_matrix, predictions: np.ndarray, originals: np.ndarray, labels: list, path: str, title: str):
-        if not os.path.exists(path):
-            os.makedirs(path)
+    def _svd(self, dataset: csr_matrix, predictions: np.ndarray, originals: np.ndarray, labels: list, directory: str, title: str):
+        """Plot SVD with 2 components of predicted dataset.
+            dataset: csr_matrix, classified dataset 
+            predictions: np.ndarray, predicted labels of dataset
+            originals: np.ndarray, original labels of dataset
+            labels: list, unique labels of original dataset
+            directory: str, directory where to save the given 
+            title: str,
+        """
         random.seed(self._seed)
         np.random.seed(self._seed)
-        svd = TruncatedSVD(n_components=2)
-        reduced = svd.fit_transform(
+        reduced = TruncatedSVD(n_components=2).fit_transform(
             StandardScaler(with_mean=False).fit_transform(dataset))
         columns = ("original", "prediction")
         maximum_x, maximum_y = np.max(reduced, axis=0) + 0.1
@@ -296,7 +308,7 @@ class ZipfClassifier:
                     s=20)
 
         plt.savefig(
-            "{path}/{title}.png".format(path=path, title=title))
+            "{directory}/{title} - Truncated SVD.png".format(directory=directory, title=title))
         plt.clf()
 
     def _heatmap(self, axis: mpl.axes.SubplotBase, data: np.matrix, labels: list, title: str, fmt: str):
@@ -333,8 +345,8 @@ class ZipfClassifier:
         self._heatmap(plt.subplot(1, 1, 2), confusion_matrix.astype(np.float) /
                       confusion_matrix.sum(axis=1)[:, np.newaxis], labels, "Normalized confusion matrix", "0.4g")
         plt.suptitle(title)
-        plt.savefig("{path}/{title}.png".format(path=path,
-                                                title=title))
+        plt.savefig("{path}/{title} - Confusion matrices.png".format(path=path,
+                                                                     title=title))
         plt.clf()
 
     def _save_results(self, directory: str, name: str, dataset: csr_matrix, originals: np.ndarray, predictions: np.ndarray, labels: List[str]):
@@ -398,5 +410,5 @@ class ZipfClassifier:
         labels, datasets, predictions = zip(*[(directory, *self.classify_directory("{path}/{directory}".format(
             path=path, directory=directory)))
             for directory in directories])
-        self._save_results("result", path.replace("/", "_"), vstack(datasets), np.repeat(
+        self._save_results("results", path.replace("/", "_"), vstack(datasets), np.repeat(
             labels, [len(p) for p in predictions]), np.concatenate(predictions), labels)

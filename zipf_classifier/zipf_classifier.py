@@ -16,6 +16,7 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 from seaborn import heatmap
 from tqdm import tqdm
+from typing import Iterator, Generator, List, Tuple
 
 
 class ZipfClassifier:
@@ -33,18 +34,19 @@ class ZipfClassifier:
         random.seed(self._seed)
         np.random.seed(self._seed)
 
-    def _get_directories(self, path: str) -> list:
+    def _get_directories(self, path: str) -> List[str]:
         """Return the directories inside the first level of a given path.
             path:str, the path from where to load the first level directories list.
         """
         return next(os.walk(path))[1]
 
-    def _find_files(self, root: str) -> list:
-        """Return leaf files from given `root`."""
-        print("Searching files within directory {root}".format(root=root))
-        return [[
-            "{path}/{file}".format(path=path, file=file) for file in files
-        ] for path, dirs, files in os.walk(root) if not dirs]
+    def _lazy_file_loader(self, path: str, files: List)->Generator:
+        for file in files:
+            with open("{path}/{file}".format(path=path, file=file), "r") as f:
+                yield f.read()
+
+    def _lazy_directory_loader(self, root: str)->Generator:
+        return (self._lazy_file_loader(path, files) for path, dirs, files in os.walk(root) if not dirs)
 
     def _counter_from_path(self, files: list) -> Counter:
         """Return a counter representing the files in the given directory.
@@ -52,16 +54,14 @@ class ZipfClassifier:
         """
         c = Counter()
         for file in files:
-            with open(file, "r", encoding="utf-8") as f:
-                c.update((w for w in re.split(
-                    self._regex, f.read().lower()) if w))
+            c.update((w for w in re.split(self._regex, file.lower()) if w))
         return c
 
-    def _counters_from_root(self, root: str) -> list:
+    def _counters_from_file_iterator(self, file_iterator: Iterator) -> list:
         """Return list of counters for the documents found in given root."""
-        return [
-            self._counter_from_path(files) for files in self._find_files(root)
-        ]
+        return (
+            self._counter_from_path(files) for files in file_iterator
+        )
 
     def _counters_to_frequencies(self, counters: list) -> csr_matrix:
         """Return a csr_matrix representing sorted counters as frequencies.
@@ -88,7 +88,7 @@ class ZipfClassifier:
             root:str, root of dataset to load
         """
         return self._counters_to_frequencies(
-            self._counters_from_root(root))
+            self._counters_from_file_iterator(root))
 
     def _build_keymap(self, counters: list) -> dict:
         """Return an enumeration of the given counter keys as dictionary.
@@ -104,8 +104,8 @@ class ZipfClassifier:
         """Return a dictionary representing the training dataset at the given root."""
         dataset_counters = {
             document_class:
-            self._counters_from_root("{root}/{document_class}".format(
-                root=root, document_class=document_class))
+            self._counters_from_file_iterator(self._lazy_directory_loader("{root}/{document_class}".format(
+                root=root, document_class=document_class)))
             for document_class in self._get_directories(root)
         }
 
@@ -219,6 +219,9 @@ class ZipfClassifier:
             self._keys = json.load(f)
 
     def save(self, path: str):
+        """Save the trained classifier to given directory.
+            path:str, the path to save the trained classifier.
+        """
         if not os.path.exists(path):
             os.makedirs(path)
         [
@@ -231,18 +234,6 @@ class ZipfClassifier:
         with open(
                 "{path}/keys.json".format(path=path), "w") as f:
             json.dump(self._keys, f)
-
-    def classify(self, path: str) -> list:
-        """Load the dataset at the given path and run trained classifier with it.
-            path:str, the path from where to load the dataset
-        """
-        dataset = self._build_dataset(path)
-        return dataset, self._classes[np.argmin(
-            [
-                np.min(euclidean_distances(dataset, c), axis=1)
-                for c in self._representatives
-            ],
-            axis=0)]
 
     def _svd(self, dataset: csr_matrix, predictions: np.ndarray, originals: np.ndarray, labels: list, path: str, title: str):
         if not os.path.exists(path):
@@ -372,14 +363,40 @@ class ZipfClassifier:
         np.save("{path}/{name}-predictions.npz".format(path=path,
                                                        name=name), predictions)
 
-    def test(self, path: str) -> list:
+    def _classify(self, dataset: csr_matrix) -> Tuple[csr_matrix, np.ndarray]:
+        return dataset, self._classes[np.argmin(
+            [
+                np.min(euclidean_distances(dataset, c), axis=1)
+                for c in self._representatives
+            ],
+            axis=0)]
+
+    def classify_directory(self, directory: str) -> Tuple[csr_matrix, np.ndarray]:
+        """Load the dataset at the given path and run trained classifier with it.
+            directory:str, the path from where to load the dataset
+        """
+        return self._classify(self._build_dataset(self._lazy_directory_loader(directory)))
+
+    def classify_texts(self, texts: List[str]) -> Tuple[csr_matrix, np.ndarray]:
+        """Return the classification of given texts
+            texts:List[str], the texts to classify
+        """
+        return self._classify(self._build_dataset([texts]))
+
+    def classify_text(self, text: str) -> Tuple[csr_matrix, np.ndarray]:
+        """Return the classification of given text
+            text:str, the text to classify
+        """
+        return self.classify_texts([text])
+
+    def test(self, path: str):
         """Run test on the classifier over given directory, considering top level as classes.
             path:str, the path from where to run the test.
         """
         directories = self._get_directories(path)
         print("Running {n} tests with the data in {path}.".format(
             n=len(directories), path=path))
-        labels, datasets, datasets_predictions = zip(*[(directory, *self.classify("{path}/{directory}".format(
+        labels, datasets, datasets_predictions = zip(*[(directory, *self.classify_directory("{path}/{directory}".format(
             path=path, directory=directory)))
             for directory in directories])
         originals = np.repeat(labels, [len(p) for p in datasets_predictions])

@@ -71,7 +71,7 @@ class ZipfClassifier:
             n=len(counters)))
         keys = self._keys
         frequencies = np.empty((len(counters), len(keys)))
-        i = 0
+        non_zero_rows_number = 0
         for counter in counters:
             if not counter:
                 continue
@@ -79,9 +79,9 @@ class ZipfClassifier:
                 [(keys[k], v) for k, v in counter.items() if k in keys]).T
             row_sum = np.sum(values)
             if row_sum:
-                frequencies[i][indices] = values / row_sum
-                i += 1
-        return csr_matrix(frequencies[:i])
+                frequencies[non_zero_rows_number][indices] = values / row_sum
+                non_zero_rows_number += 1
+        return csr_matrix(frequencies[:non_zero_rows_number])
 
     def _build_dataset(self, root: str) -> csr_matrix:
         """Return a csr_matrix with the vector representation of given dataset.
@@ -235,6 +235,22 @@ class ZipfClassifier:
                 "{path}/keys.json".format(path=path), "w") as f:
             json.dump(self._keys, f)
 
+    def _setup_axis(self, subplot_width:int, suplot_position:int, title:str, x_margins:Tuple[float, float], y_margins:Tuple[float, float])->mpl.axes.SubplotBase:
+        """Return characterized subplot axis in given position.
+            subplot_width:int, length of subplot rows
+            suplot_position:int, position of axis in given subplot
+            title:str, title of subplot
+            x_margins:Tuple[float, float], margins of horizontal axis
+            y_margins:Tuple[float, float], margins of vertical axis
+        """
+        ax = plt.subplot(2, subplot_width, suplot_position)
+        ax.grid()
+        ax.set_title(title)
+        ax.set_xlim(*x_margins)
+        ax.set_ylim(*y_margins)
+        ax.legend(loc='upper right')
+        return ax
+
     def _svd(self, dataset: csr_matrix, predictions: np.ndarray, originals: np.ndarray, labels: list, path: str, title: str):
         if not os.path.exists(path):
             os.makedirs(path)
@@ -244,12 +260,10 @@ class ZipfClassifier:
         reduced = svd.fit_transform(
             StandardScaler(with_mean=False).fit_transform(dataset))
         columns = ("original", "prediction")
-        maximum_x, maximum_y = np.max(reduced, axis=0)
-        minimum_x, minimum_y = np.min(reduced, axis=0)
-        margin = 0.05
-        margin_x, margin_y = maximum_x * margin, maximum_y * margin
-        maximum_x, maximum_y, minimum_x, minimum_y = maximum_x + \
-            margin_x, maximum_y + margin_y, minimum_x - margin_x, minimum_y - margin_y
+        maximum_x, maximum_y = np.max(reduced, axis=0) + 0.1
+        minimum_x, minimum_y = np.min(reduced, axis=0) - 0.1
+        margins = (minimum_x, maximum_x), (minimum_y, maximum_y)
+
         df = pd.concat(
             [
                 pd.DataFrame(data=reduced, columns=['a', 'b']),
@@ -262,53 +276,21 @@ class ZipfClassifier:
         plt.figure(figsize=(20, 8))
         colors = ["red", "green", "blue", "orange", "purple", "black"]
         n = len(labels) + 1
-        i = 1
-        cumulative_original_ax = plt.subplot(2, n, n)
-        cumulative_prediction_ax = plt.subplot(2, n, 2 * n)
-        cumulative_original_ax.grid()
-        cumulative_prediction_ax.grid()
-        cumulative_original_ax.set_title("Originals")
-        cumulative_prediction_ax.set_title("Predictions")
-        cumulative_original_ax.set_xlim(minimum_x, maximum_x)
-        cumulative_original_ax.set_ylim(minimum_y, maximum_y)
-        cumulative_prediction_ax.set_xlim(minimum_x, maximum_x)
-        cumulative_prediction_ax.set_ylim(minimum_y, maximum_y)
 
-        for label, color in zip(labels, colors):
-            original_ax = plt.subplot(2, n, i)
-            prediction_ax = plt.subplot(2, n, n + i)
-            original_ax.grid()
-            prediction_ax.grid()
-            original_ax.set_xlim(minimum_x, maximum_x)
-            original_ax.set_ylim(minimum_y, maximum_y)
-            prediction_ax.set_xlim(minimum_x, maximum_x)
-            prediction_ax.set_ylim(minimum_y, maximum_y)
+        cumulative_original_ax = self._setup_axis(n, n, "Originals", *margins)
+        cumulative_prediction_ax = self._setup_axis(n, 2*n, "Predictions", *margins)
 
-            i += 1
-            original_ax.set_title("Original {label}".format(label=label))
-            prediction_ax.set_title("Prediction {label}".format(label=label))
-            for ax in (original_ax, cumulative_original_ax):
-                indices = df[columns[0]] == label
+        for i, (label, color) in enumerate(zip(labels, colors), 1):
+            original_ax = self._setup_axis(n, i, "Original {label}".format(label=label), *margins)
+            prediction_ax = self._setup_axis(n, n+1, "Prediction {label}".format(label=label), *margins)
+            for ax, column in zip(((original_ax, cumulative_original_ax), (prediction_ax, cumulative_prediction_ax)), columns):
+                indices = df[column] == label
                 ax.scatter(
                     df.loc[indices, 'a'],
                     df.loc[indices, 'b'],
                     c=color,
                     label=label,
                     s=20)
-            for ax in (prediction_ax, cumulative_prediction_ax):
-                indices = df[columns[1]] == label
-                ax.scatter(
-                    df.loc[indices, 'a'],
-                    df.loc[indices, 'b'],
-                    c=color,
-                    label=label,
-                    s=20)
-
-            prediction_ax.legend(loc='upper right')
-            original_ax.legend(loc='upper right')
-
-        cumulative_prediction_ax.legend(loc='upper right')
-        cumulative_original_ax.legend(loc='upper right')
 
         plt.savefig(
             "{path}/{title}.png".format(path=path, title=title))

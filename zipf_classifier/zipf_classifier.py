@@ -249,7 +249,6 @@ class ZipfClassifier:
         ax.set_title(title)
         ax.set_xlim(*x_margins)
         ax.set_ylim(*y_margins)
-        ax.legend(loc='upper right')
         return ax
 
     def _svd(self, dataset: csr_matrix, predictions: np.ndarray, originals: np.ndarray, labels: list, directory: str, title: str):
@@ -264,8 +263,9 @@ class ZipfClassifier:
         reduced = TruncatedSVD(n_components=2).fit_transform(
             StandardScaler(with_mean=False).fit_transform(dataset))
         columns = ("original", "prediction")
-        maximum_x, maximum_y = np.max(reduced, axis=0) + 0.1
-        minimum_x, minimum_y = np.min(reduced, axis=0) - 0.1
+        maximum_x, maximum_y = np.max(reduced, axis=0)*1.05
+        minimum_x, minimum_y = np.min(
+            reduced, axis=0)-np.max(reduced, axis=0)*.05
         margins = (minimum_x, maximum_x), (minimum_y, maximum_y)
 
         df = pd.concat(
@@ -289,7 +289,8 @@ class ZipfClassifier:
             original_ax = self._setup_axis(
                 n, i, "Original {label}".format(label=label), *margins)
             prediction_ax = self._setup_axis(
-                n, n+1, "Prediction {label}".format(label=label), *margins)
+                n, n+i, "Prediction {label}".format(label=label), *margins)
+
             for axs, column in zip(((original_ax, cumulative_original_ax), (prediction_ax, cumulative_prediction_ax)), columns):
                 for ax in axs:
                     indices = df[column] == label
@@ -298,7 +299,16 @@ class ZipfClassifier:
                         df.loc[indices, 'b'],
                         c=color,
                         label=label,
+                        alpha=0.5,
                         s=20)
+
+            original_ax.legend(loc='upper right')
+            prediction_ax.legend(loc='upper right')
+
+        cumulative_original_ax.legend(loc='upper right')
+        cumulative_prediction_ax.legend(loc='upper right')
+
+        plt.suptitle("{title} - Truncated SVD".format(title=title))
 
         plt.savefig(
             "{directory}/{title} - Truncated SVD.png".format(directory=directory, title=title))
@@ -319,8 +329,8 @@ class ZipfClassifier:
             fmt=fmt,
             cmap="YlGnBu",
             cbar=False)
-        axis.yticks(rotation=0)
-        axis.xticks(rotation=0)
+        plt.yticks(rotation=0)
+        plt.xticks(rotation=0)
         axis.set_title(title)
 
     def _plot_confusion_matrices(self, confusion_matrix: np.matrix, labels: list, path: str, title: str):
@@ -333,9 +343,9 @@ class ZipfClassifier:
         if not os.path.exists(path):
             os.makedirs(path)
         plt.figure(figsize=(8, 4))
-        self._heatmap(plt.subplot(1, 1, 1), confusion_matrix,
+        self._heatmap(plt.subplot(1, 2, 1), confusion_matrix,
                       labels, "Confusion matrix", "d")
-        self._heatmap(plt.subplot(1, 1, 2), confusion_matrix.astype(np.float) /
+        self._heatmap(plt.subplot(1, 2, 2), confusion_matrix.astype(np.float) /
                       confusion_matrix.sum(axis=1)[:, np.newaxis], labels, "Normalized confusion matrix", "0.4g")
         plt.suptitle(title)
         plt.savefig("{path}/{title} - Confusion matrices.png".format(path=path,

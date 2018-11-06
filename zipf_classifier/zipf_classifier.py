@@ -277,9 +277,9 @@ class ZipfClassifier:
                 })
             ],
             axis=1)
-        plt.figure(figsize=(20, 8))
-        colors = ["red", "green", "blue", "orange", "purple", "black"]
         n = len(labels) + 1
+        plt.figure(figsize=(5*n, 10))
+        colors = ["red", "green", "blue", "orange", "purple", "black"]
 
         cumulative_original_ax = self._setup_axis(n, n, "Originals", *margins)
         cumulative_prediction_ax = self._setup_axis(
@@ -342,7 +342,8 @@ class ZipfClassifier:
         """
         if not os.path.exists(path):
             os.makedirs(path)
-        plt.figure(figsize=(8, 4))
+        plt.figure(figsize=(9, 4))
+        plt.subplots_adjust(wspace=0.5)
         self._heatmap(plt.subplot(1, 2, 1), confusion_matrix,
                       labels, "Confusion matrix", "d")
         self._heatmap(plt.subplot(1, 2, 2), confusion_matrix.astype(np.float) /

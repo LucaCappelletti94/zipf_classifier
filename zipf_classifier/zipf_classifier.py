@@ -60,14 +60,16 @@ class ZipfClassifier:
 
     def _counters_from_file_iterator(self, file_iterator: Iterator) -> list:
         """Return list of counters for the documents found in given root."""
-        return (
+        return [
             self._counter_from_path(files) for files in file_iterator
-        )
+        ]
 
     def _counters_to_frequencies(self, counters: list) -> csr_matrix:
         """Return a csr_matrix representing sorted counters as frequencies.
             counters:list, the list of Counters objects from which to create the csr_matrix
         """
+        print("Converting {n} counters to sparse matrix.".format(
+            n=len(counters)))
         keys = self._keys
         frequencies = np.empty((len(counters), len(keys)))
         non_zero_rows_number = 0

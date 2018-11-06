@@ -68,8 +68,6 @@ class ZipfClassifier:
         """Return a csr_matrix representing sorted counters as frequencies.
             counters:list, the list of Counters objects from which to create the csr_matrix
         """
-        print("Converting {n} counters to sparse matrix.".format(
-            n=len(counters)))
         keys = self._keys
         frequencies = np.empty((len(counters), len(keys)))
         non_zero_rows_number = 0

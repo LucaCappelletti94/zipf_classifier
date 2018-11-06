@@ -355,9 +355,9 @@ class ZipfClassifier:
         np.save("{directory}/{name}-predictions.npz".format(directory=directory,
                                                             name=name), predictions)
         self._svd(dataset, originals, predictions, labels,
-                  "results/truncated_svd", name)
+                  directory, name)
         self._plot_confusion_matrices(confusion_matrix(
-            originals, predictions, labels=labels), labels, "results/confusion_matrices", name)
+            originals, predictions, labels=labels), labels, directory, name)
 
     def _classify(self, dataset: csr_matrix) -> Tuple[csr_matrix, np.ndarray]:
         """Return a tuple with classified dataset and classification vector.

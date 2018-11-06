@@ -21,18 +21,12 @@ from typing import Iterator, Generator, List, Tuple
 
 class ZipfClassifier:
 
-    def __init__(self, n_jobs: int=1, seed: int=42):
+    def __init__(self, n_jobs: int=1):
         """Create a new instance of ZipfClassifier
             n_jobs:int, number of parallel jobs to use.
-            seed:int, random seed to reproduce results.
         """
-        self._classifier = None
-        self._classes = None
-        self._n_jobs = n_jobs
-        self._regex = re.compile(r"\W+")
-        self._seed = seed
-        random.seed(self._seed)
-        np.random.seed(self._seed)
+        self._classifier, self._classes, self._n_jobs, self._regex = None, None, n_jobs, re.compile(
+            r"\W+")
 
     def _get_directories(self, path: str) -> List[str]:
         """Return the directories inside the first level of a given path.
@@ -141,7 +135,7 @@ class ZipfClassifier:
         print("Running kmeans on {n} points with k={k} and {m} iterations.".format(
             n=points.shape[0], k=k, m=iterations))
         kmeans = KMeans(
-            n_clusters=k, random_state=self._seed, max_iter=iterations, n_jobs=self._n_jobs)
+            n_clusters=k, max_iter=iterations, n_jobs=self._n_jobs)
         kmeans.fit(points)
         return kmeans.cluster_centers_, kmeans.predict(points)
 
@@ -267,8 +261,6 @@ class ZipfClassifier:
             directory: str, directory where to save the given 
             title: str,
         """
-        random.seed(self._seed)
-        np.random.seed(self._seed)
         reduced = TruncatedSVD(n_components=2).fit_transform(
             StandardScaler(with_mean=False).fit_transform(dataset))
         columns = ("original", "prediction")
@@ -400,10 +392,13 @@ class ZipfClassifier:
         """
         return self.classify_texts([text])
 
-    def test(self, path: str):
+    def test(self, path: str, seed: int):
         """Run test on the classifier over given directory, considering top level as classes.
             path:str, the path from where to run the test.
+            seed:int, the random seed to use for the test.
         """
+        np.random.seed(seed)
+        random.seed(seed)
         directories = self._get_directories(path)
         print("Running {n} tests with the data in {path}.".format(
             n=len(directories), path=path))

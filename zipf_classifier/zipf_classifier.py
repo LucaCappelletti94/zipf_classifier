@@ -27,6 +27,7 @@ class ZipfClassifier:
         """
         self._classifier, self._classes, self._n_jobs, self._regex = None, None, n_jobs, re.compile(
             r"\W+")
+        self._seed = 2007
 
     def _get_directories(self, path: str) -> List[str]:
         """Return the directories inside the first level of a given path.
@@ -135,7 +136,7 @@ class ZipfClassifier:
         print("Running kmeans on {n} points with k={k} and {m} iterations.".format(
             n=points.shape[0], k=k, m=iterations))
         kmeans = KMeans(
-            n_clusters=k, max_iter=iterations, n_jobs=self._n_jobs)
+            n_clusters=k, max_iter=iterations, random_state=self._seed, n_jobs=self._n_jobs)
         kmeans.fit(points)
         return kmeans.cluster_centers_, kmeans.predict(points)
 
@@ -364,12 +365,10 @@ class ZipfClassifier:
         """
         if not os.path.exists(directory):
             os.makedirs(directory)
-        save_npz(
-            "{directory}/{name}-dataset.npz".format(directory=directory, name=name), dataset)
-        np.save("{directory}/{name}-originals.npz".format(directory=directory,
-                                                          name=name), originals)
-        np.save("{directory}/{name}-predictions.npz".format(directory=directory,
-                                                            name=name), predictions)
+        np.save("{directory}/{name}-originals".format(directory=directory,
+                                                      name=name), originals)
+        np.save("{directory}/{name}-predictions".format(directory=directory,
+                                                        name=name), predictions)
         self._svd(dataset, originals, predictions, labels,
                   directory, name)
         self._plot_confusion_matrices(confusion_matrix(
@@ -410,6 +409,7 @@ class ZipfClassifier:
         """
         np.random.seed(seed)
         random.seed(seed)
+        self._seed = seed
 
     def test(self, path: str):
         """Run test on the classifier over given directory, considering top level as classes.

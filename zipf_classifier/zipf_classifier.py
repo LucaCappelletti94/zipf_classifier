@@ -16,7 +16,8 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 from seaborn import heatmap
 from tqdm import tqdm
-from typing import Iterator, Generator, List, Tuple
+import math
+from typing import Iterator, Generator, List, Tuple, Dict, Union
 
 
 class ZipfClassifier:
@@ -35,7 +36,7 @@ class ZipfClassifier:
         """
         return next(os.walk(path))[1]
 
-    def _lazy_file_loader(self, directory: str, files: List[str])->Generator:
+    def _lazy_file_loader(self, directory: str, files: List[str])->Generator[str, None, None]:
         """Yield lazily loaded files.
             directory:str, the directory of given files list
             files: List[str], list of files
@@ -44,7 +45,7 @@ class ZipfClassifier:
             with open("{directory}/{file}".format(directory=directory, file=file), "r") as f:
                 yield f.read()
 
-    def _lazy_directory_loader(self, directory: str)->Generator:
+    def _lazy_directory_loader(self, directory: str)->Generator[Generator[str, None, None], None, None]:
         """Yield lazily directory content
             directory:str, directory from where to load the documents
         """
@@ -59,7 +60,7 @@ class ZipfClassifier:
             c.update((w for w in re.split(self._regex, file.lower()) if w))
         return c
 
-    def _counters_from_file_iterator(self, file_iterator: Iterator) -> list:
+    def _counters_from_file_iterator(self, file_iterator: Iterator) -> List[Counter]:
         """Return list of counters for the documents found in given root."""
         return [
             self._counter_from_path(files) for files in file_iterator
@@ -92,7 +93,7 @@ class ZipfClassifier:
         return self._counters_to_frequencies(
             self._counters_from_file_iterator(root))
 
-    def _build_keymap(self, counters: list) -> dict:
+    def _build_keymap(self, counters: List[Counter]) -> Dict[str, int]:
         """Return an enumeration of the given counter keys as dictionary.
             counters:list, the list of Counters objects from which to create the keymap
         """
@@ -102,7 +103,7 @@ class ZipfClassifier:
             keyset |= set(counter)
         self._keys = {k: i for i, k in enumerate(keyset)}
 
-    def _build_training_dataset(self, root: str) -> dict:
+    def _build_training_dataset(self, root: str) -> Dict[str, csr_matrix]:
         """Return a dictionary representing the training dataset at the given root."""
         dataset_counters = {
             document_class:
@@ -126,116 +127,94 @@ class ZipfClassifier:
             for key, matrix in sparse_matrices.items()
         }
 
-    def _kmeans(self, k: int, points: csr_matrix,
-                iterations: int) -> tuple:
-        """Return a tuple containing centroids and predictions for given data with k centroids.
-            k:int, number of clusters to use for k-means
+    def _kmeans(self, points: csr_matrix) -> csr_matrix:
+        """Return a sparse matrix containing `k` centroids for given data with k.
             points:csr_matrix, points to run kmeans on
-            iterations:int, number of iterations of kmeans
         """
-        print("Running kmeans on {n} points with k={k} and {m} iterations.".format(
-            n=points.shape[0], k=k, m=iterations))
-        kmeans = KMeans(
-            n_clusters=k, max_iter=iterations, random_state=self._seed, n_jobs=self._n_jobs)
-        kmeans.fit(points)
-        return kmeans.cluster_centers_, kmeans.predict(points)
+        print("Running kmeans on {n} points with k={k} and {iterations} iterations.".format(
+            n=points.shape[0], k=self._k, iterations=self._iterations))
+        return csr_matrix(KMeans(
+            n_clusters=self._k, max_iter=self._iterations, n_jobs=self._n_jobs).fit(points).cluster_centers_)
 
-    def _representative_points(self,
-                               points: csr_matrix,
-                               k: int,
-                               iterations: int,
-                               points_percentage: float,
-                               distance_percentage: float) -> csr_matrix:
-        """Return representative points for given set, using given percentage `points_percentage` and moving points of `distance_percentage`.
-            points:csr_matrix, points from which to extract the representative points
-            k:int, number of clusters
-            iterations:int, number of iterations of kmeans
-            points_percentage:float, percentage of points to use as representatives
-            distance_percentage:float, percentage of distance to move representatives towards respective centroid
+    def _build_classifier(self, dataset: Dict[str, csr_matrix]) -> Tuple[np.ndarray, csr_matrix]:
+        """Return a tuple with dataset classes and centroids.
+            dataset:[str, csr_matrix], dictionary representing the training dataset.
         """
-        centroids, predictions = self._kmeans(k, points, iterations)
-
-        print("Determining representative points.")
-
-        representatives = centroids
-
-        distances = np.squeeze(
-            np.asarray(
-                np.power(points - centroids[predictions], 2).sum(axis=1)))
-        for i in tqdm(range(k), leave=False, total=k):
-            cluster = points[predictions == i]
-            Ni = cluster.shape[0]
-            ni = np.floor(points_percentage * Ni).astype(int)
-            representatives = np.vstack([
-                representatives, cluster[np.argpartition(
-                    distances[predictions == i].reshape(
-                        (Ni, )), ni)[-ni:]] * (1 - distance_percentage) + centroids[i] * distance_percentage
-            ])
-        return csr_matrix(representatives)
-
-    def _build_classifier(self, dataset: dict,
-                          k: int,
-                          iterations: int,
-                          points_percentage: float,
-                          distance_percentage: float) -> tuple:
-        """Build classifier for given dataset.
-            dataset:str, root of given dataset
-            k:int, number of clusters
-            iterations:int, number of iterations of kmeans
-            points_percentage:float, percentage of points to use as representatives
-            distance_percentage:float, percentage of distance to move representatives towards respective centroid
-        """
-        print("Determining representative points for {n} classes.".format(
+        print("Determining centroids for {n} classes.".format(
             n=len(dataset.keys())))
-        return np.array(list(dataset.keys())), [
-            self._representative_points(
-                data, k, iterations, points_percentage, distance_percentage)
+        return np.array(list(dataset.keys())), vstack([
+            self._kmeans(data)
             for data in dataset.values()
-        ]
+        ])
 
     def fit(self, path: str, k: int,
-            iterations: int,
-            points_percentage: float,
-            distance_percentage: float) -> tuple:
+            iterations: int) -> Tuple[np.ndarray, csr_matrix]:
         """Load the dataset at the given path and fit classifier with it.
             path:str, the path from where to load the dataset
             k:int, number of clusters
             iterations:int, number of iterations of kmeans
-            points_percentage:float, percentage of points to use as representatives
-            distance_percentage:float, percentage of distance to move representatives towards respective centroid
         """
+        self._k, self._iterations = k, iterations
         self._classes, self._representatives = self._build_classifier(
-            self._build_training_dataset(path), k, iterations, points_percentage, distance_percentage)
+            self._build_training_dataset(path))
 
-    def load(self, directory: str):
+    def _format_classes_path(self, directory: str)->str:
+        """Return formatted classes path.
+            directory:str, the directory for the classes file.
+        """
+        return "{directory}/classes.npy".format(directory=directory)
+
+    def _format_keys_path(self, directory: str)->str:
+        """Return formatted keys path.
+            directory:str, the directory for the keys file.
+        """
+        return "{directory}/keys.json".format(directory=directory)
+
+    def _format_classifier_path(self, directory: str, k: int, iterations: int)->str:
+        """Return formatted classifier path.
+            directory:str, the directory for the classifier file.
+            k:int, number of clusters
+            iterations:int, number of iterations of kmeans
+        """
+        return "{directory}/classifier-{k}-{iterations}.npz".format(
+            directory=directory, k=k, iterations=iterations)
+
+    def _format_paths(self, directory: str, k: int, iterations: int)->Tuple[str, str, str]:
+        """Return formatted classes, keys and classifier paths.
+            directory:str, the directory for the classifier file.
+            k:int, number of clusters
+            iterations:int, number of iterations of kmeans
+        """
+        return self._format_classes_path(directory), self._format_keys_path(directory), self._format_classifier_path(directory, k, iterations)
+
+    def load(self, directory: str, k: int, iterations: int):
         """Load the trained classifier from given directory.
-            path:str, the path from where to load the trained classifier.
+            directory:str, the directory for the classifier file.
+            k:int, number of clusters
+            iterations:int, number of iterations of kmeans
         """
-        self._classes, self._representatives = zip(*[(doc.split(".")[0], load_npz("{path}/{doc}".format(path=path, doc=doc))) for path, dirs,
-                                                     docs in os.walk(directory) for doc in docs if doc.endswith(".npz")])
-
-        self._classes = np.array(self._classes)
-
-        with open(
-                "{directory}/keys.json".format(directory=directory), "r") as f:
+        classes_path, keys_path, classifier_path = self._format_paths(
+            directory, k, iterations)
+        self._k = k
+        self._iterations = iterations
+        self._classes = np.load(classes_path)
+        with open(keys_path, "r") as f:
             self._keys = json.load(f)
+        self._representatives = load_npz(classifier_path)
 
-    def save(self, path: str):
+    def save(self, directory: str):
         """Save the trained classifier to given directory.
-            path:str, the path to save the trained classifier.
+            directory:str, the directory for the classifier file.
         """
-        if not os.path.exists(path):
-            os.makedirs(path)
-        [
-            save_npz(
-                "{path}/{matrix_class}.npz".format(
-                    path=path, matrix_class=matrix_class), matrix)
-            for matrix, matrix_class in zip(self._representatives, self._classes)
-        ]
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
-        with open(
-                "{path}/keys.json".format(path=path), "w") as f:
+        classes_path, keys_path, classifier_path = self._format_paths(
+            directory, self._k, self._iterations)
+        np.save(classes_path, self._classes)
+        with open(keys_path, "w") as f:
             json.dump(self._keys, f)
+        save_npz(classifier_path, self._representatives)
 
     def _setup_axis(self, subplot_width: int, suplot_position: int, title: str, x_margins: Tuple[float, float], y_margins: Tuple[float, float])->mpl.axes.SubplotBase:
         """Return characterized subplot axis in given position.
@@ -254,11 +233,11 @@ class ZipfClassifier:
 
     def _svd(self, dataset: csr_matrix, predictions: np.ndarray, originals: np.ndarray, labels: list, directory: str, title: str):
         """Plot SVD with 2 components of predicted dataset.
-            dataset: csr_matrix, classified dataset 
+            dataset: csr_matrix, classified dataset
             predictions: np.ndarray, predicted labels of dataset
             originals: np.ndarray, original labels of dataset
             labels: list, unique labels of original dataset
-            directory: str, directory where to save the given 
+            directory: str, directory where to save the given
             title: str,
         """
         reduced = TruncatedSVD(n_components=2).fit_transform(
@@ -374,52 +353,64 @@ class ZipfClassifier:
         self._plot_confusion_matrices(confusion_matrix(
             originals, predictions, labels=labels), labels, directory, name)
 
-    def _classify(self, dataset: csr_matrix) -> Tuple[csr_matrix, np.ndarray]:
+    def _classify(self, dataset: csr_matrix, neighbours:int, determine_important_words:bool) -> Union[Tuple[csr_matrix, np.ndarray], Tuple[csr_matrix, np.ndarray, np.ndarray]]:
         """Return a tuple with classified dataset and classification vector.
             dataset:csr_matrix, dataset to classify
+            neighbours:int, number of neighbours to consider for classification.
+            determine_important_words:bool, whetever to determine the important words for documents classification.
         """
+        distances = euclidean_distances(dataset, self._representatives)
+        partitions = np.argpartition(distances, neighbours, axis=1)[:, :neighbours]
+        cluster_distances = distances[np.arange(
+            partitions.shape[0]).reshape(-1, 1), partitions]
+        masks = np.repeat(self._classes, self._k)[partitions].reshape(1,*partitions.shape) == self._classes.reshape(self._classes.size,1,1)
         return dataset, self._classes[np.argmin(
-            [
-                np.min(euclidean_distances(dataset, c), axis=1)
-                for c in self._representatives
-            ],
+            np.sum(np.nan_to_num(cluster_distances**(-2) * masks), axis=2)**-1,
             axis=0)]
 
-    def classify_directory(self, directory: str) -> Tuple[csr_matrix, np.ndarray]:
+    def classify_directory(self, directory: str, neighbours:int, determine_important_words:bool=False) -> Union[Tuple[csr_matrix, np.ndarray], Tuple[csr_matrix, np.ndarray, np.ndarray]]:
         """Load the dataset at the given path and run trained classifier with it.
-            directory:str, the path from where to load the dataset
+            directory:str, the path from where to load the dataset.
+            neighbours:int, number of neighbours to consider for classification.
+            determine_important_words:bool, whetever to determine the important words for documents classification.
         """
-        return self._classify(self._build_dataset(self._lazy_directory_loader(directory)))
+        return self._classify(self._build_dataset(self._lazy_directory_loader(directory)), neighbours, determine_important_words)
 
-    def classify_texts(self, texts: List[str]) -> Tuple[csr_matrix, np.ndarray]:
+    def classify_texts(self, texts: List[str], neighbours:int, determine_important_words:bool=False) -> Union[Tuple[csr_matrix, np.ndarray], Tuple[csr_matrix, np.ndarray, np.ndarray]]:
         """Return the classification of given texts
-            texts:List[str], the texts to classify
+            texts:List[str], the texts to classify.
+            neighbours:int, number of neighbours to consider for classification.
+            determine_important_words:bool, whetever to determine the important words for documents classification.
         """
-        return self._classify(self._build_dataset([texts]))
+        return self._classify(self._build_dataset([texts]), neighbours, determine_important_words)
 
-    def classify_text(self, text: str) -> Tuple[csr_matrix, np.ndarray]:
+    def classify_text(self, text: str, neighbours:int, determine_important_words:bool=False) -> Union[Tuple[csr_matrix, np.ndarray], Tuple[csr_matrix, np.ndarray, np.ndarray]]:
         """Return the classification of given text
-            text:str, the text to classify
+            text:str, the text to classify.
+            neighbours:int, number of neighbours to consider for classification.
+            determine_important_words:bool, whetever to determine the important words for documents classification.
         """
-        return self.classify_texts([text])
+        return self.classify_texts([text], neighbours, determine_important_words)
 
     def set_seed(self, seed: int):
-        """Set random seed.
+        """Set random seed to reproduce results.
             seed:int, the random seed to use for the test.
         """
         np.random.seed(seed)
         random.seed(seed)
         self._seed = seed
 
-    def test(self, path: str):
+    def test(self, path: str, neighbours:int):
         """Run test on the classifier over given directory, considering top level as classes.
             path:str, the path from where to run the test.
+            neighbours:int, number of neighbours to consider for classification.
         """
         directories = self._get_directories(path)
         print("Running {n} tests with the data in {path}.".format(
             n=len(directories), path=path))
-        labels, datasets, predictions = zip(*[(directory, *self.classify_directory("{path}/{directory}".format(
-            path=path, directory=directory)))
+        labels, datasets, predictions, important_words = zip(*[(directory, *self.classify_directory("{path}/{directory}".format(
+            path=path, directory=directory), neighbours, True))
             for directory in directories])
-        self._save_results("results", path.replace("/", "_"), vstack(datasets), np.repeat(
-            labels, [len(p) for p in predictions]), np.concatenate(predictions), labels)
+        originals = np.repeat(labels, [len(p) for p in predictions])
+        self._save_results("results", path.replace(
+            "/", "_"), vstack(datasets), originals, np.concatenate(predictions), labels)

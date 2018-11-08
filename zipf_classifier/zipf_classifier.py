@@ -105,6 +105,7 @@ class ZipfClassifier:
         for counter in counters:
             keyset |= set(counter)
         self._keys = {k: i for i, k in enumerate(keyset)}
+        self._words = np.array(list(self._keys.keys()))
 
     def _build_training_dataset(self, root: str) -> Dict[str, csr_matrix]:
         """Return a dictionary representing the training dataset at the given root."""

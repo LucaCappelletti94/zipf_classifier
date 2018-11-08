@@ -58,7 +58,8 @@ class ZipfClassifier:
         """
         c = Counter()
         for file in files:
-            c.update((w for w in re.split(self._regex, file.lower()) if w))
+            c.update((w for w in re.split(self._regex, file.lower())
+                      if w and len(w) > 1 and w not in self._stopwords))
         return c
 
     def _counters_from_file_iterator(self, file_iterator: Iterator) -> List[Counter]:

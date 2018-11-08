@@ -426,7 +426,7 @@ class ZipfClassifier:
         n = len(labels) + 1
         plt.figure(figsize=(4*n, 4))
         global_words_list = []
-        wc = WordCloud(width=400, height=400)
+        wc = WordCloud(width=400, height=400, random_state=self._seed)
         for i, (words_list, label) in enumerate(zip(important_words, labels), 1):
             words_set = [
                 word for words in words_list for word in words]
@@ -506,11 +506,7 @@ class ZipfClassifier:
             self._classes, self._representatives_sizes)
         masks = repeated_classes[partitions].reshape(
             1, *partitions.shape) == self._classes.reshape(self._classes.size, 1, 1)
-        # Cardinality
-        # predictions_indices = np.argmax(np.apply_along_axis(
-        #     np.bincount, 1, np.repeat(np.arange(self._classes.size), self._representatives_sizes)[partitions]), axis=1)
-        # End Cardinality
-        # Mean
+
         cluster_distances = distances[np.arange(
             partitions.shape[0]).reshape(-1, 1), partitions]
         nan_cluster_distances = np.repeat(
@@ -567,8 +563,8 @@ class ZipfClassifier:
         """Set random seed to reproduce results.
             seed:int, the random seed to use for the test.
         """
-        np.random.seed(seed)
         random.seed(seed)
+        np.random.seed(seed)
         self._seed = seed
 
     def test(self, path: str, neighbours: int):

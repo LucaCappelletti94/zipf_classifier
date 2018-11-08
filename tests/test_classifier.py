@@ -1,7 +1,6 @@
 from zipf_classifier import ZipfClassifier, split
 import os
 import shutil
-import filecmp
 
 os.chdir('./tests')
 
@@ -29,9 +28,6 @@ def test_version():
         new_classifier.load(
             "trained-{path}".format(path=path), k, iterations,  "stopwords.json")
         new_classifier.test("testing-{path}".format(path=path), neighbours)
-
-    differences = filecmp.dircmp(
-        "expected results", "results").diff_files
 
     # Cleaning up
     shutil.rmtree("testing-test_dataset")

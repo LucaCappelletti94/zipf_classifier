@@ -84,7 +84,8 @@ class ZipfClassifier:
                 [(keys[k], v) for k, v in counter.items() if k in keys]).T
             row_sum = np.sum(values)
             if row_sum:
-                frequencies[non_zero_rows_number][indices] = values / row_sum
+                frequencies[non_zero_rows_number][indices] = values / \
+                    np.max(values)
                 non_zero_rows_number += 1
         return csr_matrix(frequencies[:non_zero_rows_number])
 

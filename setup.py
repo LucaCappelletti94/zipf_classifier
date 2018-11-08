@@ -83,7 +83,7 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=['numpy', 'pandas', 'scipy', 'sklearn',
-                      'tqdm', 'seaborn', 'matplotlib']
+                      'tqdm', 'seaborn', 'matplotlib', 'wordcloud']
 )
 
 

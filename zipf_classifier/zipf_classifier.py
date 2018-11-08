@@ -15,6 +15,7 @@ import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 from seaborn import heatmap
+from wordcloud import WordCloud
 from tqdm import tqdm
 import math
 from typing import Iterator, Generator, List, Tuple, Dict, Union

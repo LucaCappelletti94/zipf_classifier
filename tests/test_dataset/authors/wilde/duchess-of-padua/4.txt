@@ -1,0 +1,416 @@
+SCENE
+The Court of Justice: the walls are hung with stamped grey velvet:above the hangings the wall is red, and gilt symbolical figuresbear up the roof, which is made of red beams with grey soffits andmoulding: a canopy of white satin flowered with gold is set forthe Duchess: below it a long bench with red cloth for the Judges:below that a table for the clerks of the court. Two soldiers standon each side of the canopy, and two soldiers guard the door; thecitizens have some of them collected in the Court; others arecoming in greeting one another; two tipstaffs in violet keep orderwith long white wands.
+FIRST CITIZEN
+Good morrow, neighbour Anthony.
+SECOND CITIZEN
+Good morrow, neighbour Dominick.
+FIRST CITIZEN
+This is a strange day for Padua, is it not?--the Duke being dead.
+SECOND CITIZEN
+I tell you, neighbour Dominick, I have not known such a day sincethe last Duke died.
+FIRST CITIZEN
+They will try him first, and sentence him afterwards, will theynot, neighbour Anthony?
+SECOND CITIZEN
+Nay, for he might 'scape his punishment then; but they will condemnhim first so that he gets his deserts, and give him trialafterwards so that no injustice is done.
+FIRST CITIZEN
+Well, well, it will go hard with him I doubt not.
+SECOND CITIZEN
+Surely it is a grievous thing to shed a Duke's blood.
+THIRD CITIZEN
+They say a Duke has blue blood.
+SECOND CITIZEN
+I think our Duke's blood was black like his soul.
+FIRST CITIZEN
+Have a watch, neighbour Anthony, the officer is looking at thee.
+SECOND CITIZEN
+I care not if he does but look at me; he cannot whip me with thelashes of his eye.
+THIRD CITIZEN
+What think you of this young man who stuck the knife into the Duke?
+SECOND CITIZEN
+Why, that he is a well-behaved, and a well-meaning, and a well-favoured lad, and yet wicked in that he killed the Duke.
+THIRD CITIZEN
+'Twas the first time he did it: may be the law will not be hard onhim, as he did not do it before.
+SECOND CITIZEN
+True.
+TIPSTAFF
+Silence, knave.
+SECOND CITIZEN
+Am I thy looking-glass, Master Tipstaff, that thou callest meknave?
+FIRST CITIZEN
+Here be one of the household coming. Well, Dame Lucy, thou art ofthe Court, how does thy poor mistress the Duchess, with her sweetface?
+MISTRESS LUCY
+O well-a-day! O miserable day! O day! O misery! Why it is justnineteen years last June, at Michaelmas, since I was married to myhusband, and it is August now, and here is the Duke murdered; thereis a coincidence for you!
+SECOND CITIZEN
+Why, if it is a coincidence, they may not kill the young man:there is no law against coincidences.
+FIRST CITIZEN
+But how does the Duchess?
+MISTRESS LUCY
+Well well, I knew some harm would happen to the house: six weeksago the cakes were all burned on one side, and last Saint Martineven as ever was, there flew into the candle a big moth that hadwings, and a'most scared me.
+FIRST CITIZEN
+But come to the Duchess, good gossip: what of her?
+MISTRESS LUCY
+Marry, it is time you should ask after her, poor lady; she isdistraught almost. Why, she has not slept, but paced the chamberall night long. I prayed her to have a posset, or some aqua-vitae,and to get to bed and sleep a little for her health's sake, but sheanswered me she was afraid she might dream. That was a strangeanswer, was it not?
+SECOND CITIZEN
+These great folk have not much sense, so Providence makes it up tothem in fine clothes.
+MISTRESS LUCY
+Well, well, God keep murder from us, I say, as long as we arealive.
+[Enter LORD MORANZONE hurriedly.]
+MORANZONE
+Is the Duke dead?
+SECOND CITIZEN
+He has a knife in his heart, which they say is not healthy for anyman.
+MORANZONE
+Who is accused of having killed him?
+SECOND CITIZEN
+Why, the prisoner, sir.
+MORANZONE
+But who is the prisoner?
+SECOND CITIZEN
+Why, he that is accused of the Duke's murder.
+MORANZONE
+I mean, what is his name?
+SECOND CITIZEN
+Faith, the same which his godfathers gave him: what else should itbe?
+TIPSTAFF
+Guido Ferranti is his name, my lord.
+MORANZONE
+I almost knew thine answer ere you gave it.[Aside.]Yet it is strange he should have killed the Duke,Seeing he left me in such different mood.It is most likely when he saw the man,This devil who had sold his father's life,That passion from their seat within his heartThrust all his boyish theories of love,And in their place set vengeance; yet I marvelThat he escaped not.[Turning again to the crowd.]How was he taken? Tell me.
+THIRD CITIZEN
+Marry, sir, he was taken by the heels.
+MORANZONE
+But who seized him?
+THIRD CITIZEN
+Why, those that did lay hold of him.
+MORANZONE
+How was the alarm given?
+THIRD CITIZEN
+That I cannot tell you, sir.
+MISTRESS LUCY
+It was the Duchess herself who pointed him out.
+MORANZONE
+[aside]The Duchess! There is something strange in this.
+MISTRESS LUCY
+Ay! And the dagger was in his hand--the Duchess's own dagger.
+MORANZONE
+What did you say?
+MISTRESS LUCY
+Why, marry, that it was with the Duchess's dagger that the Duke waskilled.
+MORANZONE
+[aside]There is some mystery about this: I cannot understand it.
+SECOND CITIZEN
+They be very long a-coming,
+FIRST CITIZEN
+I warrant they will come soon enough for the prisoner.
+TIPSTAFF
+Silence in the Court!
+FIRST CITIZEN
+Thou dost break silence in bidding us keep it, Master Tipstaff.[Enter the LORD JUSTICE and the other Judges.]
+SECOND CITIZEN
+Who is he in scarlet? Is he the headsman?
+THIRD CITIZEN
+Nay, he is the Lord Justice.[Enter GUIDO guarded.]
+SECOND CITIZEN
+There be the prisoner surely.
+THIRD CITIZEN
+He looks honest.
+FIRST CITIZEN
+That be his villany: knaves nowadays do look so honest that honestfolk are forced to look like knaves so as to be different.[Enter the Headman, who takes his stand behind GUIDO.]
+SECOND CITIZEN
+Yon be the headsman then! O Lord! Is the axe sharp, think you?
+FIRST CITIZEN
+Ay! sharper than thy wits are; but the edge is not towards him,mark you.
+SECOND CITIZEN
+[scratching his neck]I' faith, I like it not so near.
+FIRST CITIZEN
+Tut, thou need'st not be afraid; they never cut the heads of commonfolk: they do but hang us.[Trumpets outside.]
+THIRD CITIZEN
+What are the trumpets for? Is the trial over?
+FIRST CITIZEN
+Nay, 'tis for the Duchess.[Enter the DUCHESS in black velvet; her train of flowered blackvelvet is carried by two pages in violet; with her is the CARDINALin scarlet, and the gentlemen of the Court in black; she takes herseat on the throne above the Judges, who rise and take their capsoff as she enters; the CARDINAL sits next to her a little lower;the Courtiers group themselves about the throne.]
+SECOND CITIZEN
+O poor lady, how pale she is! Will she sit there?
+FIRST CITIZEN
+Ay! she is in the Duke's place now.
+SECOND CITIZEN
+That is a good thing for Padua; the Duchess is a very kind andmerciful Duchess; why, she cured my child of the ague once.
+THIRD CITIZEN
+Ay, and has given us bread: do not forget the bread.
+A SOLDIER
+Stand back, good people.
+SECOND CITIZEN
+If we be good, why should we stand back?
+TIPSTAFF
+Silence in the Court!
+LORD JUSTICE
+May it please your Grace,Is it your pleasure we proceed to trialOf the Duke's murder? [DUCHESS bows.]Set the prisoner forth.What is thy name?
+GUIDO
+It matters not, my lord.
+LORD JUSTICE
+Guido Ferranti is thy name in Padua.
+GUIDO
+A man may die as well under that name as any other.
+LORD JUSTICE
+Thou art not ignorantWhat dreadful charge men lay against thee here,Namely, the treacherous murder of thy Lord,Simone Gesso, Duke of Padua;What dost thou say in answer?
+GUIDO
+I say nothing.
+LORD JUSTICE
+[rising]Guido Ferranti -
+MORANZONE
+[stepping from the crowd]Tarry, my Lord Justice.
+LORD JUSTICE
+Who art thou that bid'st justice tarry, sir?
+MORANZONE
+So be it justice it can go its way;But if it be not justice -
+LORD JUSTICE
+Who is this?
+COUNT BARDI
+A very noble gentleman, and well knownTo the late Duke.
+LORD JUSTICE
+Sir, thou art come in timeTo see the murder of the Duke avenged.There stands the man who did this heinous thing.
+MORANZONE
+My lord,I ask again what proof have ye?
+LORD JUSTICE
+[holding up the dagger]This dagger,Which from his blood-stained hands, itself all blood,Last night the soldiers seized: what further proofNeed we indeed?
+MORANZONE
+[takes the danger and approaches the DUCHESS]Saw I not such a daggerHang from your Grace's girdle yesterday?[The DUCHESS shudders and makes no answer.]Ah! my Lord Justice, may I speak a momentWith this young man, who in such peril stands?
+LORD JUSTICE
+Ay, willingly, my lord, and may you turn himTo make a full avowal of his guilt.[LORD MORANZONE goes over to GUIDO, who stands R. and clutches himby the hand.]
+MORANZONE
+[in a low voice]She did it! Nay, I saw it in her eyes.Boy, dost thou think I'll let thy father's sonBe by this woman butchered to his death?Her husband sold your father, and the wifeWould sell the son in turn.
+GUIDO
+Lord Moranzone,I alone did this thing: be satisfied,My father is avenged.
+LORD JUSTICE
+Doth he confess?
+GUIDO
+My lord, I do confessThat foul unnatural murder has been done.
+FIRST CITIZEN
+Why, look at that: he has a pitiful heart, and does not likemurder; they will let him go for that.
+LORD JUSTICE
+Say you no more?
+GUIDO
+My lord, I say this also,That to spill human blood is deadly sin.
+SECOND CITIZEN
+Marry, he should tell that to the headsman: 'tis a good sentiment.
+GUIDO
+Lastly, my lord, I do entreat the CourtTo give me leave to utter openlyThe dreadful secret of this mystery,And to point out the very guilty oneWho with this dagger last night slew the Duke.
+LORD JUSTICE
+Thou hast leave to speak.
+DUCHESS
+[rising]I say he shall not speak:What need have we of further evidence?Was he not taken in the house at nightIn Guilt's own bloody livery?
+LORD JUSTICE
+[showing her the statute]Your GraceCan read the law.
+DUCHESS
+[waiving book aside]Bethink you, my Lord Justice,Is it not very like that such a oneMay, in the presence of the people here,Utter some slanderous word against my Lord,Against the city, or the city's honour,Perchance against myself.
+LORD JUSTICE
+My liege, the law.
+DUCHESS
+He shall not speak, but, with gags in his mouth,Shall climb the ladder to the bloody block.
+LORD JUSTICE
+The law, my liege.
+DUCHESS
+We are not bound by law,But with it we bind others.
+MORANZONE
+My Lord Justice,Thou wilt not suffer this injustice here.
+LORD JUSTICE
+The Court needs not thy voice, Lord Moranzone.Madam, it were a precedent most evilTo wrest the law from its appointed course,For, though the cause be just, yet anarchyMight on this licence touch these golden scalesAnd unjust causes unjust victories gain.
+COUNT BARDI
+I do not think your Grace can stay the law.
+DUCHESS
+Ay, it is well to preach and prate of law:Methinks, my haughty lords of Padua,If ye are hurt in pocket or estate,So much as makes your monstrous revenuesLess by the value of one ferry toll,Ye do not wait the tedious law's delayWith such sweet patience as ye counsel me.
+COUNT BARDI
+Madam, I think you wrong our nobles here.
+DUCHESS
+I think I wrong them not. Which of you allFinding a thief within his house at night,With some poor chattel thrust into his rags,Will stop and parley with him? do ye notGive him unto the officer and his hookTo be dragged gaolwards straightway?And so now,Had ye been men, finding this fellow here,With my Lord's life still hot upon his hands,Ye would have haled him out into the court,And struck his head off with an axe.
+GUIDO
+O God!
+DUCHESS
+Speak, my Lord Justice.
+LORD JUSTICE
+Your Grace, it cannot be:The laws of Padua are most certain here:And by those laws the common murderer evenMay with his own lips plead, and make defence.
+DUCHESS
+This is no common murderer, Lord Justice,But a great outlaw, and a most vile traitor,Taken in open arms against the state.For he who slays the man who rules a stateSlays the state also, widows every wife,And makes each child an orphan, and no lessIs to be held a public enemy,Than if he came with mighty ordonnance,And all the spears of Venice at his back,To beat and batter at our city gates -Nay, is more dangerous to our commonwealth,For walls and gates, bastions and forts, and thingsWhose common elements are wood and stoneMay be raised up, but who can raise againThe ruined body of my murdered lord,And bid it live and laugh?
+MAFFIO
+Now by Saint PaulI do not think that they will let him speak.
+JEPPO VITELLOZZO
+There is much in this, listen.
+DUCHESS
+Wherefore now,Throw ashes on the head of Padua,With sable banners hang each silent street,Let every man be clad in solemn black;But ere we turn to these sad rites of mourningLet us bethink us of the desperate handWhich wrought and brought this ruin on our state,And straightway pack him to that narrow house,Where no voice is, but with a little dustDeath fills right up the lying mouths of men.
+GUIDO
+Unhand me, knaves! I tell thee, my Lord Justice,Thou mightst as well bid the untrammelled ocean,The winter whirlwind, or the Alpine storm,Not roar their will, as bid me hold my peace!Ay! though ye put your knives into my throat,Each grim and gaping wound shall find a tongue,And cry against you.
+LORD JUSTICE
+Sir, this violenceAvails you nothing; for save the tribunalGive thee a lawful right to open speech,Naught that thou sayest can be credited.[The DUCHESS smiles and GUIDO falls back with a gesture ofdespair.]Madam, myself, and these wise Justices,Will with your Grace's sanction now retireInto another chamber, to decideUpon this difficult matter of the law,And search the statutes and the precedents.
+DUCHESS
+Go, my Lord Justice, search the statutes well,Nor let this brawling traitor have his way.
+MORANZONE
+Go, my Lord Justice, search thy conscience well,Nor let a man be sent to death unheard.[Exit the LORD JUSTICE and the Judges.]
+DUCHESS
+Silence, thou evil genius of my life!Thou com'st between us two a second time;This time, my lord, I think the turn is mine.
+GUIDO
+I shall not die till I have uttered voice.
+DUCHESS
+Thou shalt die silent, and thy secret with thee.
+GUIDO
+Art thou that Beatrice, Duchess of Padua?
+DUCHESS
+I am what thou hast made me; look at me well,I am thy handiwork.
+MAFFIO
+See, is she notLike that white tigress which we saw at Venice,Sent by some Indian soldan to the Doge?
+JEPPO
+Hush! she may hear thy chatter.
+HEADSMAN
+My young fellow,I do not know why thou shouldst care to speak,Seeing my axe is close upon thy neck,And words of thine will never blunt its edge.But if thou art so bent upon it, whyThou mightest plead unto the Churchman yonder:The common people call him kindly here,Indeed I know he has a kindly soul.
+GUIDO
+This man, whose trade is death, hath courtesiesMore than the others.
+HEADSMAN
+Why, God love you, sir,I'll do you your last service on this earth.
+GUIDO
+My good Lord Cardinal, in a Christian land,With Lord Christ's face of mercy looking downFrom the high seat of Judgment, shall a manDie unabsolved, unshrived? And if not so,May I not tell this dreadful tale of sin,If any sin there be upon my soul?
+DUCHESS
+Thou dost but waste thy time.
+CARDINAL
+Alack, my son,I have no power with the secular arm.My task begins when justice has been done,To urge the wavering sinner to repentAnd to confess to Holy Church's earThe dreadful secrets of a sinful mind.
+DUCHESS
+Thou mayest speak to the confessionalUntil thy lips grow weary of their tale,But here thou shalt not speak.
+GUIDO
+My reverend father,You bring me but cold comfort.
+CARDINAL
+Nay, my son,For the great power of our mother Church,Ends not with this poor bubble of a world,Of which we are but dust, as Jerome saith,For if the sinner doth repentant die,Our prayers and holy masses much availTo bring the guilty soul from purgatory.
+DUCHESS
+And when in purgatory thou seest my LordWith that red star of blood upon his heart,Tell him I sent thee hither.
+GUIDO
+O dear God!
+MORANZONE
+This is the woman, is it, whom you loved?
+CARDINAL
+Your Grace is very cruel to this man.
+DUCHESS
+No more than he was cruel to her Grace.
+CARDINAL
+Yet mercy is the sovereign right of princes.
+DUCHESS
+I got no mercy, and I give it not.He hath changed my heart into a heart of stone,He hath sown rank nettles in a goodly field,He hath poisoned the wells of pity in my breast,He hath withered up all kindness at the root;My life is as some famine murdered land,Whence all good things have perished utterly:I am what he hath made me.[The DUCHESS weeps.]
+JEPPO
+Is it not strangeThat she should so have loved the wicked Duke?
+MAFFIO
+It is most strange when women love their lords,And when they love them not it is most strange.
+JEPPO
+What a philosopher thou art, Petrucci!
+MAFFIO
+Ay! I can bear the ills of other men,Which is philosophy.
+DUCHESS
+They tarry long,These greybeards and their council; bid them come;Bid them come quickly, else I think my heartWill beat itself to bursting: not indeed,That I here care to live; God knows my lifeIs not so full of joy, yet, for all that,I would not die companionless, or goLonely to Hell.Look, my Lord Cardinal,Canst thou not see across my forehead here,In scarlet letters writ, the word Revenge?Fetch me some water, I will wash it off:'Twas branded there last night, but in the day-timeI need not wear it, need I, my Lord Cardinal?Oh, how it sears and burns into my brain:Give me a knife; not that one, but another,And I will cut it out.
+CARDINAL
+It is most naturalTo be incensed against the murderous handThat treacherously stabbed your sleeping lord.
+DUCHESS
+I would, old Cardinal, I could burn that hand;But it will burn hereafter.
+CARDINAL
+Nay, the ChurchOrdains us to forgive our enemies.
+DUCHESS
+Forgiveness? what is that? I never got it.They come at last: well, my Lord Justice, well.[Enter the LORD JUSTICE.]
+LORD JUSTICE
+Most gracious Lady, and our sovereign Liege,We have long pondered on the point at issue,And much considered of your Grace's wisdom,And never wisdom spake from fairer lips -
+DUCHESS
+Proceed, sir, without compliment.
+LORD JUSTICE
+We find,As your own Grace did rightly signify,That any citizen, who by force or craftConspires against the person of the Liege,Is ipso facto outlaw, void of rightsSuch as pertain to other citizens,Is traitor, and a public enemy,Who may by any casual sword be slainWithout the slayer's danger; nay, if broughtInto the presence of the tribunal,Must with dumb lips and silence reverentListen unto his well-deserved doom,Nor has the privilege of open speech.
+DUCHESS
+I thank thee, my Lord Justice, heartily;I like your law: and now I pray dispatchThis public outlaw to his righteous doom;What is there more?
+LORD JUSTICE
+Ay, there is more, your Grace.This man being alien born, not Paduan,Nor by allegiance bound unto the Duke,Save such as common nature doth lay down,Hath, though accused of treasons manifold,Whose slightest penalty is certain death,Yet still the right of public utteranceBefore the people and the open court;Nay, shall be much entreated by the Court,To make some formal pleading for his life,Lest his own city, righteously incensed,Should with an unjust trial tax our state,And wars spring up against the commonwealth:So merciful are the laws of PaduaUnto the stranger living in her gates.
+DUCHESS
+Being of my Lord's household, is he stranger here?
+LORD JUSTICE
+Ay, until seven years of service spentHe cannot be a Paduan citizen.
+GUIDO
+I thank thee, my Lord Justice, heartily;I like your law.
+SECOND CITIZEN
+I like no law at all:Were there no law there'd be no law-breakers,So all men would be virtuous.
+FIRST CITIZEN
+So they would;'Tis a wise saying that, and brings you far.
+TIPSTAFF
+Ay! to the gallows, knave.
+DUCHESS
+Is this the law?
+LORD JUSTICE
+It is the law most certainly, my liege.
+DUCHESS
+Show me the book: 'tis written in blood-red.
+JEPPO
+Look at the Duchess.
+DUCHESS
+Thou accursed law,I would that I could tear thee from the stateAs easy as I tear thee from this book.[Tears out the page.]Come here, Count Bardi: are you honourable?Get a horse ready for me at my house,For I must ride to Venice instantly.
+BARDI
+To Venice, Madam?
+DUCHESS
+Not a word of this,Go, go at once. [Exit COUNT BARDI.]A moment, my Lord Justice.If, as thou sayest it, this is the law -Nay, nay, I doubt not that thou sayest right,Though right be wrong in such a case as this -May I not by the virtue of mine officeAdjourn this court until another day?
+LORD JUSTICE
+Madam, you cannot stay a trial for blood.
+DUCHESS
+I will not tarry then to hear this manRail with rude tongue against our sacred person.Come, gentlemen.
+LORD JUSTICE
+My liege,You cannot leave this court until the prisonerBe purged or guilty of this dread offence.
+DUCHESS
+Cannot, Lord Justice? By what right do youSet barriers in my path where I should go?Am I not Duchess here in Padua,And the state's regent?
+LORD JUSTICE
+For that reason, Madam,Being the fountain-head of life and deathWhence, like a mighty river, justice flows,Without thy presence justice is dried upAnd fails of purpose: thou must tarry here.
+DUCHESS
+What, wilt thou keep me here against my will?
+LORD JUSTICE
+We pray thy will be not against the law.
+DUCHESS
+What if I force my way out of the court?
+LORD JUSTICE
+Thou canst not force the Court to give thee way.
+DUCHESS
+I will not tarry. [Rises from her seat.]
+LORD JUSTICE
+Is the usher here?Let him stand forth. [Usher comes forward.]Thou knowest thy business, sir.[The Usher closes the doors of the court, which are L., and whenthe DUCHESS and her retinue approach, kneels down.]
+USHER
+In all humility I beseech your GraceTurn not my duty to discourtesy,Nor make my unwelcome office an offence.
+DUCHESS
+Is there no gentleman amongst you allTo prick this prating fellow from our way?
+MAFFIO
+[drawing his sword]Ay! that will I.
+LORD JUSTICE
+Count Maffio, have a care,And you, sir. [To JEPPO.]The first man who draws his swordUpon the meanest officer of this Court,Dies before nightfall.
+DUCHESS
+Sirs, put up your swords:It is most meet that I should hear this man.[Goes back to throne.]
+MORANZONE
+Now hast thou got thy enemy in thy hand.
+LORD JUSTICE
+[taking the time-glass up]Guido Ferranti, while the crumbling sandFalls through this time-glass, thou hast leave to speak.This and no more.
+GUIDO
+It is enough, my lord.
+LORD JUSTICE
+Thou standest on the extreme verge of death;See that thou speakest nothing but the truth,Naught else will serve thee.
+GUIDO
+If I speak it not,Then give my body to the headsman there.
+LORD JUSTICE
+[turns the time-glass]Let there be silence while the prisoner speaks.
+TIPSTAFF
+Silence in the Court there.
+GUIDO
+My Lords Justices,And reverent judges of this worthy court,I hardly know where to begin my tale,So strangely dreadful is this history.First, let me tell you of what birth I am.I am the son of that good Duke LorenzoWho was with damned treachery done to deathBy a most wicked villain, lately DukeOf this good town of Padua.
+LORD JUSTICE
+Have a care,It will avail thee nought to mock this princeWho now lies in his coffin.
+MAFFIO
+By Saint James,This is the Duke of Parma's rightful heir.
+JEPPO
+I always thought him noble.
+GUIDO
+I confessThat with the purport of a just revenge,A most just vengeance on a man of blood,I entered the Duke's household, served his will,Sat at his board, drank of his wine, and wasHis intimate: so much I will confess,And this too, that I waited till he grewTo give the fondest secrets of his lifeInto my keeping, till he fawned on me,And trusted me in every private matterEven as my noble father trusted him;That for this thing I waited.[To the Headsman.] Thou man of blood!Turn not thine axe on me before the time:Who knows if it be time for me to die?Is there no other neck in court but mine?
+LORD JUSTICE
+The sand within the time-glass flows apace.Come quickly to the murder of the Duke.
+GUIDO
+I will be brief: Last night at twelve o' the clock,By a strong rope I scaled the palace wall,With purport to revenge my father's murder -Ay! with that purport I confess, my lord.This much I will acknowledge, and this also,That as with stealthy feet I climbed the stairWhich led unto the chamber of the Duke,And reached my hand out for the scarlet clothWhich shook and shivered in the gusty door,Lo! the white moon that sailed in the great heavenFlooded with silver light the darkened room,Night lit her candles for me, and I sawThe man I hated, cursing in his sleep;And thinking of a most dear father murdered,Sold to the scaffold, bartered to the block,I smote the treacherous villain to the heartWith this same dagger, which by chance I foundWithin the chamber.
+DUCHESS
+[rising from her seat]Oh!
+GUIDO
+[hurriedly]I killed the Duke.Now, my Lord Justice, if I may crave a boon,Suffer me not to see another sunLight up the misery of this loathsome world.
+LORD JUSTICE
+Thy boon is granted, thou shalt die to-night.Lead him away. Come, Madam[GUIDO is led off; as he goes the DUCHESS stretches out her armsand rushes down the stage.]
+DUCHESS
+Guido! Guido![Faints.]
+Tableau
+END OF ACT IV.
+

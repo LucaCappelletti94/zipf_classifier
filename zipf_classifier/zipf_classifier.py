@@ -28,7 +28,7 @@ class ZipfClassifier:
             n_jobs:int, number of parallel jobs to use.
         """
         self._classifier, self._classes, self._n_jobs, self._regex = None, None, n_jobs, re.compile(
-            r"\W+")
+            r"\W*\d*")
         self._seed = 2007
 
     def _get_directories(self, path: str) -> List[str]:

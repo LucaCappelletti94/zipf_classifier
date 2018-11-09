@@ -7,7 +7,7 @@ import random
 from sklearn.cluster import KMeans
 from scipy.sparse import csr_matrix, save_npz, vstack, load_npz
 from sklearn.metrics.pairwise import cosine_distances, euclidean_distances
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, precision_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import TruncatedSVD
 from collections import Counter
@@ -493,6 +493,30 @@ class ZipfClassifier:
         self._plot_representatives_points_usage(
             representative_points_usage, labels, directory, name)
 
+    def _plot_scores(self, scores:List[float], directory:str, title:str):
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        plt.plot(list(range(len(scores))), scores)
+        plt.xlabel("Neighbours")
+        plt.ylabel("Precision")
+        plt.title("Precision for neighbours considered")
+        plt.savefig("{directory}/{title} - Precision for neighbours considered.png".format(directory=directory,
+                                                                               title=title))
+        plt.clf()
+        plt.close()
+
+    def _determine_important_words(self, masks:np.ndarray, partitions:np.ndarray, predictions_indices:np.ndarray)->List[List[str]]:
+        cluster_mask = masks[predictions_indices.reshape(-1, 1), np.arange(
+            predictions_indices.shape[0]).reshape(-1, 1)].reshape(*partitions.shape)
+        return [self._words[np.argmax(
+                self._representatives[p[m]], axis=1)][0].tolist() for p, m in zip(partitions, cluster_mask)]
+
+    def _determine_representative_points_usage(self, partitions:np.ndarray):
+        representative_points_usage = {}
+        representative_points_usage["total"] = np.bincount(
+            partitions.flatten(), minlength=self._representatives.shape[0])
+        return representative_points_usage
+
     def _classify(self, dataset: csr_matrix, neighbours: int, determine_important_words: bool, determine_representative_points_usage: bool) -> Union[Tuple[csr_matrix, np.ndarray], Tuple[csr_matrix, np.ndarray, List[List[str]]]]:
         """Return a tuple with classified dataset and classification vector.
             dataset:csr_matrix, dataset to classify
@@ -500,7 +524,11 @@ class ZipfClassifier:
             determine_important_words:bool, whetever to determine the important words for documents classification.
             determine_representative_points_usage:bool, whetever to determine the usage of representative points.
         """
-        distances = cosine_distances(dataset, self._representatives)
+        if self._distances is None:
+            distances = cosine_distances(dataset, self._representatives)
+            self._distances = distances
+        else:
+            distances = self._distances
         partitions = np.argpartition(distances, neighbours, axis=1)[
             :, :neighbours]
         repeated_classes = np.repeat(
@@ -570,17 +598,28 @@ class ZipfClassifier:
         np.random.seed(seed)
         self._seed = seed
 
-    def test(self, path: str, neighbours: int):
+    def test(self, path: str, neighbours: Union[int, List[int]]):
         """Run test on the classifier over given directory, considering top level as classes.
             path:str, the path from where to run the test.
             neighbours:int, number of neighbours to consider for classification.
         """
-        directories = self._get_directories(path)
+        labels = self._get_directories(path)
         print("Running {n} tests with the data in {path}.".format(
-            n=len(directories), path=path))
-        labels, datasets, predictions, important_words, representative_points_usage = zip(*[(directory, *self.classify_directory("{path}/{directory}".format(
-            path=path, directory=directory), neighbours, True, True))
-            for directory in directories])
-        originals = np.repeat(labels, [len(p) for p in predictions])
-        self._save_results("results", path.replace(
-            "/", "_"), vstack(datasets), originals, np.concatenate(predictions), labels, important_words, representative_points_usage)
+            n=len(labels), path=path))
+        if isinstance(neighbours, int):
+            neighbours = [neighbours]
+        datasets = [
+            self._build_dataset(self._lazy_directory_loader("{path}/{directory}".format(
+                    path=path, directory=label)))
+            for label in labels
+        ]
+        precision_scores = []
+        for n in tqdm(neighbours):
+            self._distances = None
+            _, predictions, important_words, representative_points_usage = zip(*[self._classify(dataset, n, True, True)
+                for dataset, label in zip(datasets, labels)])
+            originals = np.repeat(labels, [len(p) for p in predictions])
+            self._save_results("results - {n}".format(n=n), path.replace(
+                "/", "_"), vstack(datasets), originals, np.concatenate(predictions), labels, important_words, representative_points_usage)
+            precision_scores.append(precision_score(originals, np.concatenate(predictions), labels = labels, average='weighted'))
+        self._plot_scores(precision_scores, "precision_scores".format(n=n), path.replace("/", "_"))

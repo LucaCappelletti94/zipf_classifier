@@ -365,6 +365,7 @@ class ZipfClassifier:
         plt.savefig(
             "{directory}/{title} - Truncated SVD.png".format(directory=directory, title=title))
         plt.clf()
+        plt.close()
 
     def _heatmap(self, axis: mpl.axes.SubplotBase, data: np.matrix, labels: list, title: str, fmt: str):
         """ Plot given matrix as heatmap.
@@ -403,6 +404,7 @@ class ZipfClassifier:
         plt.savefig("{directory}/{title} - Confusion matrices.png".format(directory=directory,
                                                                           title=title))
         plt.clf()
+        plt.close()
 
     def _plot_wordcloud(self, axis: mpl.axes.SubplotBase, wc: WordCloud, words: List[str], label: str):
         """Plot a given wordcloud on given axis.
@@ -439,6 +441,7 @@ class ZipfClassifier:
         plt.savefig("{path}/{title} - Word Clouds.png".format(path=path,
                                                               title=title))
         plt.clf()
+        plt.close()
 
     def _plot_representatives_points_usage(self, representative_points_usage: Tuple, labels: List[str], path: str, title: str):
         """Plot information of representatives points usage
@@ -467,6 +470,7 @@ class ZipfClassifier:
         plt.savefig("{path}/{title} - Representatives points usage.png".format(path=path,
                                                                                title=title))
         plt.clf()
+        plt.close()
 
     def _save_results(self, directory: str, name: str, dataset: csr_matrix, originals: np.ndarray, predictions: np.ndarray, labels: List[str], important_words: List[List[List[str]]], representative_points_usage: Dict):
         """Save classification results.

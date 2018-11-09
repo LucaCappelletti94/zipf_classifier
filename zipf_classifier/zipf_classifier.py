@@ -18,6 +18,7 @@ from seaborn import heatmap
 from wordcloud import WordCloud
 from tqdm import tqdm
 import math
+import warnings
 from typing import Iterator, Generator, List, Tuple, Dict, Union
 
 
@@ -512,7 +513,9 @@ class ZipfClassifier:
         nan_cluster_distances = np.repeat(
             cluster_distances.reshape(1, *cluster_distances.shape), masks.shape[0], axis=0)
         nan_cluster_distances[~masks] = np.nan
-        nan_means = np.nanmean(nan_cluster_distances, axis=2)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            nan_means = np.nanmean(nan_cluster_distances, axis=2)
         predictions_indices = np.nanargmin(
             nan_means,
             axis=0)

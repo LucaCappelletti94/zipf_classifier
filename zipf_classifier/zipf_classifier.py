@@ -555,16 +555,9 @@ class ZipfClassifier:
         predictions = self._classes[predictions_indices]
         results = (dataset, predictions)
         if determine_important_words:
-            cluster_mask = masks[predictions_indices.reshape(-1, 1), np.arange(
-                predictions_indices.shape[0]).reshape(-1, 1)].reshape(*partitions.shape)
-            important_words = [self._words[np.argmax(
-                self._representatives[p[m]], axis=1)][0].tolist() for p, m in zip(partitions, cluster_mask)]
-            results = (*results, important_words)
+            results = (*results, self._determine_important_words(masks, partitions, predictions_indices))
         if determine_representative_points_usage:
-            representative_points_usage = {}
-            representative_points_usage["total"] = np.bincount(
-                partitions.flatten(), minlength=self._representatives.shape[0])
-            results = (*results, representative_points_usage)
+            results = (*results, self._determine_representative_points_usage(partitions))
         return results
 
     def classify_directory(self, directory: str, neighbours: int, determine_important_words: bool=False, determine_representative_points_usage: bool=False) -> Union[Tuple[csr_matrix, np.ndarray], Tuple[csr_matrix, np.ndarray, List[List[str]]]]:

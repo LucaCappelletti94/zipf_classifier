@@ -528,11 +528,7 @@ class ZipfClassifier:
             determine_important_words:bool, whetever to determine the important words for documents classification.
             determine_representative_points_usage:bool, whetever to determine the usage of representative points.
         """
-        if self._distances is None:
-            distances = cosine_distances(dataset, self._representatives)
-            self._distances = distances
-        else:
-            distances = self._distances
+        distances = cosine_distances(dataset, self._representatives)
         partitions = np.argpartition(distances, neighbours, axis=1)[
             :, :neighbours]
         repeated_classes = np.repeat(
@@ -612,7 +608,6 @@ class ZipfClassifier:
         ]
         precision_scores = []
         for n in tqdm(neighbours):
-            self._distances = None
             _, predictions, important_words, representative_points_usage = zip(*[self._classify(dataset, n, True, True)
                 for dataset, label in zip(datasets, labels)])
             originals = np.repeat(labels, [len(p) for p in predictions])

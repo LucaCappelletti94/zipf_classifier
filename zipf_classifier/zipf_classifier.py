@@ -44,7 +44,7 @@ class ZipfClassifier:
             files: List[str], list of files
         """
         for file in files:
-            with open("{directory}/{file}".format(directory=directory, file=file), "r") as f:
+            with open("{directory}/{file}".format(directory=directory, file=file), "r", encoding='utf-8') as f:
                 yield f.read()
 
     def _lazy_directory_loader(self, directory: str)->Generator[Generator[str, None, None], None, None]:
@@ -247,7 +247,7 @@ class ZipfClassifier:
             stopwords_path: str, path to stopwords file.
         """
         if stopwords_path is not None:
-            with open(stopwords_path, "r") as f:
+            with open(stopwords_path, "r", encoding='utf-8') as f:
                 self._stopwords = json.load(f)
         else:
             self._stopwords = []
@@ -264,9 +264,9 @@ class ZipfClassifier:
         self._k = k
         self._iterations = iterations
         self._classes = np.load(classes_path)
-        with open(keys_path, "r") as f:
+        with open(keys_path, "r", encoding='utf-8') as f:
             self._keys = json.load(f)
-        with open(representatives_sizes_path, "r") as f:
+        with open(representatives_sizes_path, "r", encoding='utf-8') as f:
             self._representatives_sizes = json.load(f)
         self._words = np.array(list(self._keys.keys()))
         self._representatives = load_npz(classifier_path)

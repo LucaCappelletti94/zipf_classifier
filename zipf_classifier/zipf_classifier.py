@@ -517,13 +517,13 @@ class ZipfClassifier:
         plt.clf()
         plt.close()
 
-    def _determine_important_words(self, masks:np.ndarray, partitions:np.ndarray, predictions_indices:np.ndarray)->List[List[str]]:
+    def _determine_important_words(self, masks: np.ndarray, partitions: np.ndarray, predictions_indices: np.ndarray)->List[List[str]]:
         cluster_mask = masks[predictions_indices.reshape(-1, 1), np.arange(
             predictions_indices.shape[0]).reshape(-1, 1)].reshape(*partitions.shape)
         return [self._words[np.argmax(
                 self._representatives[p[m]], axis=1)][0].tolist() for p, m in zip(partitions, cluster_mask)]
 
-    def _determine_representative_points_usage(self, partitions:np.ndarray):
+    def _determine_representative_points_usage(self, partitions: np.ndarray):
         representative_points_usage = {}
         representative_points_usage["total"] = np.bincount(
             partitions.flatten(), minlength=self._representatives.shape[0])
@@ -559,9 +559,11 @@ class ZipfClassifier:
         predictions = self._classes[predictions_indices]
         results = (dataset, predictions)
         if determine_important_words:
-            results = (*results, self._determine_important_words(masks, partitions, predictions_indices))
+            results = (*results, self._determine_important_words(masks,
+                                                                 partitions, predictions_indices))
         if determine_representative_points_usage:
-            results = (*results, self._determine_representative_points_usage(partitions))
+            results = (
+                *results, self._determine_representative_points_usage(partitions))
         return results
 
     def classify_directory(self, directory: str, neighbours: int, determine_important_words: bool=False, determine_representative_points_usage: bool=False) -> Union[Tuple[csr_matrix, np.ndarray], Tuple[csr_matrix, np.ndarray, List[List[str]]]]:
@@ -611,15 +613,17 @@ class ZipfClassifier:
             neighbours = [neighbours]
         datasets = [
             self._build_dataset(self._lazy_directory_loader("{path}/{directory}".format(
-                    path=path, directory=label)))
-            for label in tqdm(labels)
+                path=path, directory=label)))
+            for label in labels
         ]
         precision_scores = []
         for n in tqdm(neighbours):
             _, predictions, important_words, representative_points_usage = zip(*[self._classify(dataset, n, True, True)
-                for dataset, label in zip(datasets, labels)])
+                                                                                 for dataset, label in zip(datasets, labels)])
             originals = np.repeat(labels, [len(p) for p in predictions])
-            self._save_results("results - {n}".format(n=n), path.replace(
-                "/", "_"), vstack(datasets), originals, np.concatenate(predictions), labels, important_words, representative_points_usage)
-            precision_scores.append(precision_score(originals, np.concatenate(predictions), labels = labels, average='weighted'))
-        self._plot_scores(precision_scores, "precision_scores".format(n=n), path.replace("/", "_"))
+            self._save_results("results - {n}".format(n=n), "{name} - {n} neighbours".format(name=path.replace(
+                "/", "_"), n=n), vstack(datasets), originals, np.concatenate(predictions), labels, important_words, representative_points_usage)
+            precision_scores.append(precision_score(originals, np.concatenate(
+                predictions), labels=labels, average='weighted'))
+        self._plot_scores(precision_scores, "precision_scores".format(
+            n=n), path.replace("/", "_"))

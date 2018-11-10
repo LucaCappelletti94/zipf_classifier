@@ -604,7 +604,7 @@ class ZipfClassifier:
         datasets = [
             self._build_dataset(self._lazy_directory_loader("{path}/{directory}".format(
                     path=path, directory=label)))
-            for label in labels
+            for label in tqdm(labels)
         ]
         precision_scores = []
         for n in tqdm(neighbours):

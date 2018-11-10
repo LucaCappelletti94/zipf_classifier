@@ -339,13 +339,12 @@ class ZipfClassifier:
             axis=1)
         n = len(labels) + 1
         plt.figure(figsize=(5*n, 10))
-        colors = ["red", "green", "blue", "orange", "purple", "black"]
 
         cumulative_original_ax = self._setup_axis(n, n, "Originals", *margins)
         cumulative_prediction_ax = self._setup_axis(
             n, 2*n, "Predictions", *margins)
 
-        for i, (label, color) in enumerate(zip(labels, colors), 1):
+        for i, label in enumerate(labels, 1):
             original_ax = self._setup_axis(
                 n, i, "Original {label}".format(label=label), *margins)
             prediction_ax = self._setup_axis(
@@ -357,7 +356,7 @@ class ZipfClassifier:
                     ax.scatter(
                         df.loc[indices, 'a'],
                         df.loc[indices, 'b'],
-                        c=color,
+                        c="C{i}".format(i=i),
                         label=label,
                         alpha=0.5,
                         s=20)
@@ -476,7 +475,7 @@ class ZipfClassifier:
                                                                                title=title))
         plt.close()
 
-    def _plot_roc(self, axis: mpl.axes.SubplotBase, y_true: np.ndarray, y_pred: np.ndarray, label: str, color:str):
+    def _plot_roc(self, axis: mpl.axes.SubplotBase, y_true: np.ndarray, y_pred: np.ndarray, label: str, color: str):
         x, y, _ = roc_curve(y_true, y_pred)
         axis.plot(x, y, color,
                   label="{label}, area={auc:.2f}".format(auc=auc(x, y), label=label))

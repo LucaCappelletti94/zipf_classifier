@@ -505,15 +505,18 @@ class ZipfClassifier:
         self._plot_representatives_points_usage(
             representative_points_usage, labels, directory, name)
 
-    def _plot_scores(self, scores:List[float], directory:str, title:str):
+    def _plot_scores(self, scores: List[float], directory: str, title: str):
         if not os.path.exists(directory):
             os.makedirs(directory)
-        plt.plot(list(range(len(scores))), scores)
+        x = list(range(len(scores)))
+        plt.plot(x, scores)
         plt.xlabel("Neighbours")
         plt.ylabel("Precision")
+        plt.xticks(x)
+        plt.grid()
         plt.title("Precision for neighbours considered")
         plt.savefig("{directory}/{title} - Precision for neighbours considered.png".format(directory=directory,
-                                                                               title=title))
+                                                                                           title=title))
         plt.clf()
         plt.close()
 

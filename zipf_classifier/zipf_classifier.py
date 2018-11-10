@@ -24,13 +24,18 @@ from typing import Iterator, Generator, List, Tuple, Dict, Union
 
 class ZipfClassifier:
 
-    def __init__(self, n_jobs: int=1):
+    def __init__(self, n_jobs: int=1, silent: bool=False):
         """Create a new instance of ZipfClassifier
             n_jobs:int, number of parallel jobs to use.
+            silent:bool, whatever to print info.
         """
-        self._classifier, self._classes, self._n_jobs, self._regex = None, None, n_jobs, re.compile(
+        self._classifier, self._classes, self._n_jobs, self._silent, self._regex = None, None, n_jobs, silent, re.compile(
             r"\W*\d*")
         self._seed = 2007
+
+    def _print(self, string):
+        if not self._silent:
+            print(string)
 
     def _get_directories(self, path: str) -> List[str]:
         """Return the directories inside the first level of a given path.
@@ -73,7 +78,7 @@ class ZipfClassifier:
         """Return a csr_matrix representing sorted counters as frequencies.
             counters:list, the list of Counters objects from which to create the csr_matrix
         """
-        print("Converting {n} counters to sparse matrix.".format(
+        self._print("Converting {n} counters to sparse matrix.".format(
             n=len(counters)))
         keys = self._keys
         frequencies = np.empty((len(counters), len(keys)))
@@ -101,7 +106,8 @@ class ZipfClassifier:
         """Return an enumeration of the given counter keys as dictionary.
             counters:list, the list of Counters objects from which to create the keymap
         """
-        print("Determining keyset from {n} counters.".format(n=len(counters)))
+        self._print(
+            "Determining keyset from {n} counters.".format(n=len(counters)))
         keyset = set()
         for counter in counters:
             keyset |= set(counter)
@@ -136,7 +142,7 @@ class ZipfClassifier:
         """Return a tuple containing centroids and predictions for given data with k centroids.
             points:csr_matrix, points to run kmeans on
         """
-        print("Running kmeans on {n} points with k={k} and {m} iterations.".format(
+        self._print("Running kmeans on {n} points with k={k} and {m} iterations.".format(
             n=points.shape[0], k=self._k, m=self._iterations))
         kmeans = KMeans(
             n_clusters=self._k, max_iter=self._iterations, random_state=self._seed, n_jobs=self._n_jobs)
@@ -154,7 +160,7 @@ class ZipfClassifier:
         """
         centroids, predictions = self._kmeans(points)
 
-        print("Determining representative points.")
+        self._print("Determining representative points.")
 
         representatives = centroids
 
@@ -186,7 +192,7 @@ class ZipfClassifier:
         """Return a tuple with dataset classes and centroids.
             dataset:[str, csr_matrix], dictionary representing the training dataset.
         """
-        print("Determining centroids for {n} classes.".format(
+        self._print("Determining centroids for {n} classes.".format(
             n=len(dataset.keys())))
         return np.array(list(dataset.keys())), vstack([
             self._representative_points(data)
@@ -259,6 +265,8 @@ class ZipfClassifier:
             iterations:int, number of iterations of kmeans
             stopwords_path: str, path to stopwords file.
         """
+        self._print("Loading dataset from directory {directory}.".format(
+            directory=directory))
         classes_path, representatives_sizes_path, keys_path, classifier_path = self._format_paths(
             directory, k, iterations)
         self._k = k
@@ -597,7 +605,7 @@ class ZipfClassifier:
             neighbours:int, number of neighbours to consider for classification.
         """
         labels = self._get_directories(path)
-        print("Running {n} tests with the data in {path}.".format(
+        self._print("Running {n} tests with the data in {path}.".format(
             n=len(labels), path=path))
         if isinstance(neighbours, int):
             neighbours = [neighbours]

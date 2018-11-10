@@ -5,6 +5,12 @@ import shutil
 os.chdir('./tests')
 
 
+def purge(dir, pattern):
+    for f in os.listdir(dir):
+        if re.search(pattern, f):
+            shutil.rmtree(os.path.join(dir, f))
+
+
 def test_version():
     root = "dataset"
     stopwords = "../stopwords/en_stopwords.json"
@@ -28,11 +34,9 @@ def test_version():
         classifier.save("trained-{path}".format(path=path))
         new_classifier.load(
             "trained-{path}".format(path=path), k, iterations,  stopwords)
-        new_classifier.test("testing-{path}".format(path=path), range(1, 10))
+        new_classifier.test("testing-{path}".format(path=path), range(1, 20))
 
     # Cleaning up
-    shutil.rmtree("testing-test_dataset")
-    shutil.rmtree("training-test_dataset")
-    shutil.rmtree("trained-test_dataset")
-    shutil.rmtree("results")
+    purge("\w+-_dataset")
+    purge("result-\d+")
     assert True

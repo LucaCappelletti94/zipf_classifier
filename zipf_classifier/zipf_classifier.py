@@ -30,7 +30,7 @@ class ZipfClassifier:
             silent:bool, whatever to print info.
         """
         self._classifier, self._classes, self._n_jobs, self._silent, self._regex = None, None, n_jobs, silent, re.compile(
-            r"\W*\d*")
+            r"[\W\d]+")
         self._seed = 2007
 
     def _print(self, string):

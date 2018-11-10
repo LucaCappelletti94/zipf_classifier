@@ -12,7 +12,7 @@ def purge(pattern):
             shutil.rmtree(f)
 
 
-def test_version():
+def test_classifier():
     root = "dataset"
     stopwords = "../stopwords/en_stopwords.json"
     seed = 1242

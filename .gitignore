@@ -76,3 +76,5 @@ Unimi/Algoritmica per il web/_minted-main/
 *.tfm
 
 *.600pk
+
+tests/test_dataset/

@@ -1,14 +1,15 @@
 from zipf_classifier import ZipfClassifier, split
 import os
 import shutil
+import re
 
 os.chdir('./tests')
 
 
-def purge(dir, pattern):
-    for f in os.listdir(dir):
+def purge(pattern):
+    for f in os.listdir():
         if re.search(pattern, f):
-            shutil.rmtree(os.path.join(dir, f))
+            shutil.rmtree(f)
 
 
 def test_version():
@@ -37,6 +38,6 @@ def test_version():
         new_classifier.test("testing-{path}".format(path=path), range(1, 20))
 
     # Cleaning up
-    purge("\w+-_dataset")
+    purge("\w+-dataset")
     purge("result-\d+")
     assert True

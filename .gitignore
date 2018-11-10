@@ -78,3 +78,5 @@ Unimi/Algoritmica per il web/_minted-main/
 *.600pk
 
 tests/test_dataset/
+results - */
+precision_scores

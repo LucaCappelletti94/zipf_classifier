@@ -534,7 +534,7 @@ class ZipfClassifier:
     def _plot_scores(self, scores: List[float], directory: str, title: str):
         if not os.path.exists(directory):
             os.makedirs(directory)
-        x = list(range(len(scores)))
+        x = list(range(1, 1+len(scores)))
         plt.plot(x, scores)
         plt.xlabel("Neighbours")
         plt.ylabel("Precision")

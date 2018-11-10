@@ -19,7 +19,7 @@ def test_version():
     n_jobs = 1
     training_percentage = 0.7
     k = 10
-    neighbours = 5
+    neighbours = range(1, 20)
     iterations = 300
 
     split(root, training_percentage=training_percentage, seed=seed)
@@ -35,7 +35,7 @@ def test_version():
         classifier.save("trained-{path}".format(path=path))
         new_classifier.load(
             "trained-{path}".format(path=path), k, iterations,  stopwords)
-        new_classifier.test("testing-{path}".format(path=path), range(1, 20))
+        new_classifier.test("testing-{path}".format(path=path), neighbours)
 
     # Cleaning up
     purge("\w+-dataset")

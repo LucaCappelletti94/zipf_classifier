@@ -39,5 +39,6 @@ def test_version():
 
     # Cleaning up
     purge("\w+-dataset")
-    purge("result-\d+")
+    purge("results - \d+")
+    purge("precision_scores")
     assert True

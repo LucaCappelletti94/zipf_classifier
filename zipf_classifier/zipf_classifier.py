@@ -7,7 +7,7 @@ import random
 from sklearn.cluster import KMeans
 from scipy.sparse import csr_matrix, save_npz, vstack, load_npz
 from sklearn.metrics.pairwise import cosine_distances, euclidean_distances
-from sklearn.metrics import confusion_matrix, precision_score
+from sklearn.metrics import confusion_matrix, precision_score, roc_curve, auc
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import TruncatedSVD
 from collections import Counter
@@ -372,7 +372,6 @@ class ZipfClassifier:
 
         plt.savefig(
             "{directory}/{title} - Truncated SVD.png".format(directory=directory, title=title))
-        plt.clf()
         plt.close()
 
     def _heatmap(self, axis: mpl.axes.SubplotBase, data: np.matrix, labels: list, title: str, fmt: str):
@@ -411,7 +410,6 @@ class ZipfClassifier:
         plt.suptitle("Confusion Matrices - {title}".format(title=title))
         plt.savefig("{directory}/{title} - Confusion matrices.png".format(directory=directory,
                                                                           title=title))
-        plt.clf()
         plt.close()
 
     def _plot_wordcloud(self, axis: mpl.axes.SubplotBase, wc: WordCloud, words: List[str], label: str):
@@ -448,7 +446,6 @@ class ZipfClassifier:
         plt.suptitle("Word Clouds - {title}".format(title=title))
         plt.savefig("{path}/{title} - Word Clouds.png".format(path=path,
                                                               title=title))
-        plt.clf()
         plt.close()
 
     def _plot_representatives_points_usage(self, representative_points_usage: Tuple, labels: List[str], path: str, title: str):
@@ -477,7 +474,36 @@ class ZipfClassifier:
             "Representatives points usage - {title}".format(title=title))
         plt.savefig("{path}/{title} - Representatives points usage.png".format(path=path,
                                                                                title=title))
-        plt.clf()
+        plt.close()
+
+    def _plot_roc(self, axis: mpl.axes.SubplotBase, y_true: np.ndarray, y_pred: np.ndarray, label: str, color:str):
+        x, y, _ = roc_curve(y_true, y_pred)
+        axis.plot(x, y, color,
+                  label="{label}, area={auc:.2f}".format(auc=auc(x, y), label=label))
+        axis.plot([0, 1], [0, 1], 'k--')
+        axis.set_xlabel("False Positive Rate")
+        axis.set_ylabel("True Positive Rate")
+        axis.set_title(
+            "ROC curves - {label}".format(label=label))
+
+    def _plot_rocs(self, true_labels: np.ndarray, pred_labels: np.ndarray, labels: List[str], path: str, title: str):
+        n = len(labels) + 1
+        plt.figure(figsize=(4.6*n, 4))
+        plt.subplots_adjust(wspace=0.3)
+        total_axis = plt.subplot(1, n, n)
+        for i, label in enumerate(labels, 1):
+            data = true_labels == label, pred_labels == label
+            axis = plt.subplot(1, n, i)
+            color = "C{i}".format(i=i)
+            self._plot_roc(axis, *data, label, color)
+            self._plot_roc(total_axis, *data, label, color)
+            axis.legend(loc="lower right")
+        total_axis.legend(loc="lower right")
+        total_axis.set_title("ROC curves - All")
+        plt.suptitle("Receiver operating characteristic curves")
+
+        plt.savefig("{path}/{title} - ROC.png".format(path=path,
+                                                      title=title))
         plt.close()
 
     def _save_results(self, directory: str, name: str, dataset: csr_matrix, originals: np.ndarray, predictions: np.ndarray, labels: List[str], important_words: List[List[List[str]]], representative_points_usage: Dict):
@@ -504,6 +530,7 @@ class ZipfClassifier:
         self._plot_wordclouds(important_words, labels, directory, name)
         self._plot_representatives_points_usage(
             representative_points_usage, labels, directory, name)
+        self._plot_rocs(originals, predictions, labels, directory, name)
 
     def _plot_scores(self, scores: List[float], directory: str, title: str):
         if not os.path.exists(directory):
@@ -517,7 +544,6 @@ class ZipfClassifier:
         plt.title("Precision for neighbours considered")
         plt.savefig("{directory}/{title} - Precision for neighbours considered.png".format(directory=directory,
                                                                                            title=title))
-        plt.clf()
         plt.close()
 
     def _determine_important_words(self, masks: np.ndarray, partitions: np.ndarray, predictions_indices: np.ndarray)->List[List[str]]:
@@ -628,5 +654,5 @@ class ZipfClassifier:
                 "/", "_"), n=n), vstack(datasets), originals, np.concatenate(predictions), labels, important_words, representative_points_usage)
             precision_scores.append(precision_score(originals, np.concatenate(
                 predictions), labels=labels, average='weighted'))
-        self._plot_scores(precision_scores, "precision_scores".format(
-            n=n), path.replace("/", "_"))
+        self._plot_scores(precision_scores, "precision_scores",
+                          path.replace("/", "_"))

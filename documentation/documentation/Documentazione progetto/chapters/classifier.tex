@@ -7,7 +7,7 @@
 \section{Training the classifier}
 
 \subsection{Convert documents to vector representation}
-Given a set of training class-labeled elements \(T\), we convert the documents, treated as \textit{bag of elements}, to enumeration-sorted frequency vectors.
+Given a set of training class-labeled elements \(T\), we convert the documents, treated as \textit{bag of elements}, to enumeration-sorted frequency vectors: the most common words in the language are dropped before elaborating the documents.
 
 Given a document composed of \(n=\#d\) elements \(d = \crl{e_1, e_2, \ldots, e_n}\), first we define \(d_\neq \subseteq d\) as the set of distinct elements in \(d\). Then, we map to every distinct element its normalized cardinality in the set \(d\):
 \[
@@ -22,7 +22,7 @@ Given an arbitrary percentage of points \(p \in \sqr{0,1}\) and an arbitrary dis
 \]
 This way the centroids surely distribute among the different points, following their density. If the points are, in truth, a unique cluster, the centroids will distribute themselves in an uniform fashion.
 
-Then, we select following a random uniform distribution for each cluster \(Q_i \in \crl{Q_1, \ldots, Q_k}\) a number \(\floor{\arity{p \in C_j: p \in Q_i}\cdot p}\) points. We move each point \(p\) of an amount proportional to the distance from the point to its centroid \(c_i\):\(\alpha \cdot L^2\rnd{p, c_i}\) towards its centroid.
+Then, we select the most distant points in every cluster in a number equal to \(\floor{\arity{p \in C_j: p \in Q_i}\cdot p}\). We move each point \(p\) of an amount proportional to the distance from the point to its centroid \(c_i\):\(\alpha \cdot L^2\rnd{p, c_i}\) towards its centroid.
 
 \subsubsection{Using a metric to choose k}
 For the high dimensionality and number of the vectors, iterating multiple times \textit{KMeans} searching for an optimal \(k\) following any given metric has an high time cost. For this reason, an attempt using \textbf{PCA} to reduce the dimensionality and predict the number of clusters in high dimensionality space using a density metric was made.
